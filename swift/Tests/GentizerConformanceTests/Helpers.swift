@@ -42,15 +42,17 @@ extension ConfirmRequest {
 func register(_ rt: AgentRuntime, _ step: JSONValue) throws -> @MainActor () -> Void {
     let name = step["name"]?.stringValue ?? ""
     let def = step["def"] ?? .null
+    let off: AgentUnregister
     switch step["kind"]?.stringValue {
     case "action":
-        return try rt.action(name, ActionDef(validated: def), run: behaviorRun(step["behavior"] ?? ["returns": nil]))
+        off = try rt.action(name, ActionDef(validated: def), run: behaviorRun(step["behavior"] ?? ["returns": nil]))
     case "state":
         let value = step["value"]
-        return try rt.state(name, StateDef(validated: def)) { value }
+        off = try rt.state(name, StateDef(validated: def)) { value }
     default:
-        return try rt.view(name, ViewDef(validated: def))
+        off = try rt.view(name, ViewDef(validated: def))
     }
+    return { off() }
 }
 
 /// ag-ui · a2ui suite 의 actions · states 선언 등록

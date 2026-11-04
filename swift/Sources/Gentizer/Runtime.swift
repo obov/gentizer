@@ -60,6 +60,16 @@ public typealias ActionRun = @MainActor ([String: JSONValue]) async throws -> JS
 /// confirm: true 액션 실행 전 호출. false · throw = DENIED
 public typealias ConfirmHandler = @MainActor (ConfirmRequest) async throws -> Bool
 
+/// 등록 해제. off() 로 호출 (자기 등록만 해제, 두 번 호출 무해).
+/// 함수 타입 대신 값 타입: Swift 6.1 은 @discardableResult 여도 버린 함수 타입 결과를 "function is unused" 오류로 본다
+public struct AgentUnregister: Sendable {
+    private let run: @MainActor @Sendable () -> Void
+
+    public init(_ run: @escaping @MainActor @Sendable () -> Void) { self.run = run }
+
+    @MainActor public func callAsFunction() { run() }
+}
+
 /// 표시와 실행 함수를 함께 보관하는 레지스트리. 바인딩이 화면 생명주기에 맞춰 등록 · 해제
 @MainActor
 public final class AgentRuntime {
@@ -92,12 +102,12 @@ public final class AgentRuntime {
 
     /// 해제 함수는 자기 등록만 지운다: 이미 해제됐거나 같은 이름이 재등록된 경우 무시
     @discardableResult
-    public func action(_ name: String, _ def: ActionDef, run: @escaping ActionRun) throws -> @MainActor () -> Void {
+    public func action(_ name: String, _ def: ActionDef, run: @escaping ActionRun) throws(DuplicateNameError) -> AgentUnregister {
         guard manifestStore.actions.append(name, def) else { throw DuplicateNameError(section: "actions", name: name) }
         let t = token()
         runs[name] = Slot(token: t, extra: run)
         notify()
-        return { [weak self] in
+        return AgentUnregister { [weak self] in
             guard let self, self.runs[name]?.token == t else { return }
             self.runs[name] = nil
             self.manifestStore.actions.remove(name)
@@ -106,12 +116,12 @@ public final class AgentRuntime {
     }
 
     @discardableResult
-    public func state(_ name: String, _ def: StateDef, read: @escaping @MainActor () -> JSONValue?) throws -> @MainActor () -> Void {
+    public func state(_ name: String, _ def: StateDef, read: @escaping @MainActor () -> JSONValue?) throws(DuplicateNameError) -> AgentUnregister {
         guard manifestStore.state.append(name, def) else { throw DuplicateNameError(section: "state", name: name) }
         let t = token()
         reads[name] = Slot(token: t, extra: read)
         notify()
-        return { [weak self] in
+        return AgentUnregister { [weak self] in
             guard let self, self.reads[name]?.token == t else { return }
             self.reads[name] = nil
             self.manifestStore.state.remove(name)
@@ -120,12 +130,12 @@ public final class AgentRuntime {
     }
 
     @discardableResult
-    public func view(_ name: String, _ def: ViewDef) throws -> @MainActor () -> Void {
+    public func view(_ name: String, _ def: ViewDef) throws(DuplicateNameError) -> AgentUnregister {
         guard manifestStore.views.append(name, def) else { throw DuplicateNameError(section: "views", name: name) }
         let t = token()
         viewTokens[name] = Slot(token: t, extra: ())
         notify()
-        return { [weak self] in
+        return AgentUnregister { [weak self] in
             guard let self, self.viewTokens[name]?.token == t else { return }
             self.viewTokens[name] = nil
             self.manifestStore.views.remove(name)

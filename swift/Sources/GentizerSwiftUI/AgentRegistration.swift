@@ -19,7 +19,7 @@ public final class AgentRegistration {
     }
 
     private var key: Key?
-    private var off: (@MainActor () -> Void)?
+    private var off: AgentUnregister?
 
     /// 최신 body 의 실행 함수 · 값 읽기. 등록된 클로저가 이 속성을 거쳐 부른다
     public var run: ActionRun = { _ in .null }

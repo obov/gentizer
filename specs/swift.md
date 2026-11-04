@@ -86,7 +86,7 @@ Manifest           version · actions · state · views. 구역은 등록 순서
                    Manifest(json:) 는 검증 실패 시 InvalidManifestError. json 속성 = JSON 표현
 validateManifest   (JSONValue) -> ValidationResult. 오류 path 는 TS 와 같은 문자열
 toA2uiCatalog      (Manifest, catalogId:) throws -> JSONValue (A2UI v1.0 catalog)
-AgentRuntime       @MainActor class. action · state · view 등록은 해제 함수 반환 (자기 등록만 해제),
+AgentRuntime       @MainActor class. action · state · view 등록은 AgentUnregister 반환 (off() 로 호출, 자기 등록만 해제),
                    같은 구역 같은 이름은 DuplicateNameError. manifest() · readState · subscribe · invoke
 invoke             (name, args: JSONValue = {}) async -> InvokeResult. 검사 순서 TS 와 같음
                    NOT_FOUND → INVALID_ARGS → DENIED → EXECUTION_ERROR. run 이 throw = EXECUTION_ERROR
