@@ -59,7 +59,8 @@ trigger                     runtime trigger 마다 action 하나
 상태 · 화면 → DataModel (앱 → 에이전트 단방향):
 
 ```text
-경로        /gentizer/state/<name> = readState(name) (값 없음 = null) · /gentizer/views = { <name>: <description> }
+경로        /gentizer/state/<name> = readState(name) · /gentizer/views = { <name>: <description> }
+            값 없음 · null 은 키 없음 (v1.0 data model 은 null 을 저장하지 않는다)
 시점        surface 생성 직후 · runtime 등록 · 해제 알림 · process 처리 뒤 · syncState()
 해제        등록 해제된 상태 키는 지운다
 쓰기 방향   data model 의 /gentizer 를 surface (TextField 등) 가 바꿔도 앱 상태는 바뀌지 않는다. 앱 변경은 액션으로만 (D2)
@@ -137,7 +138,7 @@ A2UISurfaceHost(runtime, catalogId:, stateSync: true, triggerSurfaceId: "gentize
   send: @MainActor (JSONValue) -> Void         렌더러 → 에이전트 메시지 하나 (A2UI v1.0 JSON)
   process(message:) async                      callRendererFunction 응답도 send 로 (반환값 없음)
   callAgentFunction(surfaceID:, name:, args:, timeoutSeconds:) async throws -> JSONValue
-  dataModel() -> JSONValue · syncState()
+  dataModel() -> JSONValue · syncState() · dispose()
 ```
 
 - action · error · callAgentFunction 은 A2UI Swift `MessageProcessor.outboundListener` 를 JSON 으로 바꿔 send

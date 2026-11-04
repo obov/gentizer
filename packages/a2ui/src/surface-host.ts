@@ -73,7 +73,11 @@ export function createA2uiSurfaceHost(runtime: AgentRuntime, options: A2uiSurfac
       if (!names.has(old)) surface.dataModel.delete(`${ROOT}/state/${escape(old)}`);
     }
     for (const name of names) {
-      surface.dataModel.set(`${ROOT}/state/${escape(name)}`, structuredClone(runtime.readState(name) ?? null), true);
+      const path = `${ROOT}/state/${escape(name)}`;
+      const value = runtime.readState(name);
+      // v1.0 data model 은 null 을 저장하지 않는다 (A2UI Swift 와 같은 결과)
+      if (value === undefined || value === null) surface.dataModel.delete(path);
+      else surface.dataModel.set(path, structuredClone(value));
     }
     written.set(surface.id, names);
     surface.dataModel.set(

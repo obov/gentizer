@@ -107,13 +107,13 @@ describe("createA2uiSurfaceHost", () => {
     await host.process(create("s1", true));
     expect(host.dataModel()).toEqual({
       version: "1.0",
-      surfaces: { s1: { gentizer: { state: { cart: [1], empty: null }, views: { list: "상품 목록" } } } },
+      surfaces: { s1: { gentizer: { state: { cart: [1] }, views: { list: "상품 목록" } } } },
     });
     cart = [1, 2];
     host.syncState();
     expect(host.surface("s1")!.dataModel.get("/gentizer/state/cart")).toEqual([1, 2]);
     offCart();
-    expect(host.surface("s1")!.dataModel.get("/gentizer/state")).toEqual({ empty: null });
+    expect(host.surface("s1")!.dataModel.get("/gentizer/state")).toEqual({});
   });
 
   test("stateSync false 면 /gentizer 없음", async () => {
