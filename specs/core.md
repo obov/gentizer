@@ -38,10 +38,37 @@ views     이름 → { description }
 
 - `requiresUserActivation` 미사용: v1.0 은 `requiresUserActivation: true` 를 `allowedCallers: "rendererOnly"` 에만 허용 (에이전트 호출 불가)
 - function 정의는 `unevaluatedProperties: false` 라 확장 키 불가 → 승인 대상 목록은 catalog 단위 extension
-- 승인 카드 표시 · 승인 전 실행 차단은 바인딩 런타임 책임 (미구현: L3)
+- 승인 전 실행 차단은 런타임 (아래 '런타임'), 승인 카드 표시는 바인딩 책임
 - confirm 액션이 없으면 `metadata` 생략
 
 state · views 는 catalog 에 들어가지 않는다. 미구현: DataModel 동기화 (state) · 화면 맥락 확장 (views).
+
+## 런타임
+
+`createAgentRuntime({ confirm? })` → 표시와 실행 함수를 함께 보관하는 플랫폼 독립 레지스트리. 바인딩 (L3) 이 마운트 · 언마운트에 맞춰 등록 · 해제한다.
+
+```text
+action(name, def, run)   등록. 해제 함수 반환. 등록 중 같은 이름은 DuplicateNameError, 해제 뒤 재등록 허용
+state(name, def, read)   등록. read() 가 현재 값
+view(name, def)          등록
+manifest()               현재 등록된 표시의 Manifest (등록 순서)
+readState(name)          read() 결과. 미등록이면 undefined
+subscribe(listener)      등록 · 해제마다 호출. 구독 해제 함수 반환
+invoke(name, args?)      → { ok: true, value } | { ok: false, error: { code, message } }. reject 없음
+```
+
+invoke 순서와 오류 코드:
+
+| 순서 | 조건 | code |
+|---|---|---|
+| 1 | 등록되지 않은 액션 (D2) | `NOT_FOUND` |
+| 2 | args 가 object 아님 · `input.required` 키 누락 | `INVALID_ARGS` |
+| 3 | `confirm: true` 이고 `confirm` 콜백이 없거나 false 반환 | `DENIED` |
+| 4 | run 이 throw · reject | `EXECUTION_ERROR` |
+
+- `args` 생략 시 `{}`. 값 검증은 object 여부 · required 키만 (JSON Schema 전체 검증 아님)
+- `confirm` 콜백 인자 `{ name, description, args }`, 반환 `boolean | Promise<boolean>`
+- `value` 는 run 반환값 (await), `undefined` 는 `null`
 
 ## A2UI 기반 확인 결과 (2026-11-04)
 
