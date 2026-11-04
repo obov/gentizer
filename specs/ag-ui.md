@@ -32,4 +32,6 @@ runWithFrontendTools(agent, runtime, options?) → { rounds, toolMessages }
 
 - 매 round 마다 tools · context 를 다시 계산 (실행으로 등록 · 상태가 바뀔 수 있음)
 
-미구현: agent-loader WebSocket 어댑터 (서버의 클라이언트 도구 지원 필요) · P2 이벤트형 `trigger`.
+미구현: P2 이벤트형 `trigger`.
+
+agent-loader 연동은 어댑터 패키지가 아니라 L4 skill 로 한다. gentizer 와 agent-loader 는 서로 의존하지 않는다.
