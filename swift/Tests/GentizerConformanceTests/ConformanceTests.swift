@@ -170,8 +170,16 @@ struct AgUiConformance {
         let recorder = ConfirmRecorder()
         let rt = recorder.makeRuntime(c.value["confirm"]?.stringValue)
         try registerDecls(rt, actions: c.value["actions"], states: c.value["states"])
+        for v in c.value["views"]?.arrayValue ?? [] {
+            try rt.view(v["name"]?.stringValue ?? "", ViewDef(validated: v["def"] ?? .null))
+        }
         let expect = c.value["expect"]?.arrayValue ?? []
         switch c.value["op"]?.stringValue {
+        case "triggerMessage":
+            let e = c.value["event"] ?? .null
+            let m = toAGUITriggerMessage(TriggerEvent(name: e["name"]?.stringValue ?? "", payload: e["payload"]?.objectValue ?? [:]))
+            #expect(m.id.hasPrefix("gentizer-trigger-"))
+            #expect([["role": .string(m.role), "content": parseJSON(m.content) ?? "<invalid>"]] == expect)
         case "tools":
             #expect(try JSONValue(encoding: toAGUITools(rt.manifest())) == .array(expect))
         case "context":

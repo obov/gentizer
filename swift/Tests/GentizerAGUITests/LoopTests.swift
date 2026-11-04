@@ -93,3 +93,72 @@ struct LoopTests {
         await #expect(throws: AGUIError.run(message: "x", code: nil)) { try await runWithFrontendTools(Failing(), rt) }
     }
 }
+
+/// script 가 throw 하는 round 가 있는 가짜 agent (RUN_ERROR 대신)
+@MainActor
+private final class FailingAgent: AGUIAgent {
+    private(set) var messages: [AGUIMessage] = []
+    private(set) var runs = 0
+    private let failRound: Int
+
+    init(failRound: Int) { self.failRound = failRound }
+
+    func runAgent(_ params: AGUIRunParameters) async throws {
+        runs += 1
+        if runs == failRound { throw AGUIError.run(message: "boom", code: nil) }
+    }
+
+    func addMessages(_ messages: [AGUIMessage]) { self.messages += messages }
+}
+
+private func triggerNames(_ messages: [AGUIMessage]) -> [String] {
+    messages.compactMap { m in
+        guard m.role == "user", let v = parseTrigger(m.content) else { return nil }
+        return v
+    }
+}
+
+private func parseTrigger(_ s: String?) -> String? {
+    guard let s, let v = try? JSONDecoder().decode(JSONValue.self, from: Data(s.utf8)) else { return nil }
+    return v["gentizer_trigger"]?["name"]?.stringValue
+}
+
+private func settle() async {
+    for _ in 0..<20 { await Task.yield() }
+}
+
+@MainActor
+struct ConnectTriggersTests {
+    @Test func queuedInOrder() async throws {
+        let rt = AgentRuntime()
+        let agent = ScriptedAgent { _ in [] }
+        let off = connectTriggers(agent, rt)
+        try rt.trigger("form_saved", payload: ["id": 1])
+        try rt.trigger("page_opened")
+        await settle()
+        #expect(agent.sentMessages.map(triggerNames) == [["form_saved"], ["form_saved", "page_opened"]])
+        off()
+    }
+
+    @Test func errorReportedAndNextContinues() async throws {
+        let rt = AgentRuntime()
+        let agent = FailingAgent(failRound: 1)
+        var errors: [String] = []
+        _ = connectTriggers(agent, rt, onError: { _, e in errors.append(e.name) })
+        try rt.trigger("first")
+        try rt.trigger("second")
+        await settle()
+        #expect(errors == ["first"])
+        #expect(agent.runs == 2)
+    }
+
+    @Test func disconnectedDoesNotRun() async throws {
+        let rt = AgentRuntime()
+        let agent = ScriptedAgent { _ in [] }
+        let off = connectTriggers(agent, rt)
+        off()
+        try rt.trigger("form_saved")
+        await settle()
+        #expect(agent.inputs.isEmpty)
+    }
+}

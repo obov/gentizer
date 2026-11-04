@@ -15,12 +15,28 @@ public func toAGUITools(_ manifest: Manifest) -> [AGUITool] {
     manifest.actions.map { AGUITool(name: $0.name, description: $0.def.description, parameters: $0.def.input ?? emptyInput) }
 }
 
-/// 상태마다 { description: "<name>: <description>", value: JSON 문자열 (값 없음 = null) }
+public let viewsContextDescription = "gentizer views: 현재 화면에 표시된 영역"
+
+/// 상태마다 { description: "<name>: <description>", value: JSON 문자열 (값 없음 = null) }.
+/// 화면이 있으면 끝에 { description: viewsContextDescription, value: { <name>: <description> } }
 @MainActor
 public func toAGUIContext(_ runtime: AgentRuntime) -> [AGUIContext] {
-    runtime.manifest().state.map {
+    let manifest = runtime.manifest()
+    var out = manifest.state.map {
         AGUIContext(description: "\($0.name): \($0.def.description)", value: jsonString(runtime.readState($0.name) ?? .null))
     }
+    if manifest.views.count > 0 {
+        let views = JSONValue.object(Dictionary(manifest.views.map { ($0.name, JSONValue.string($0.def.description)) },
+                                                uniquingKeysWith: { first, _ in first }))
+        out.append(AGUIContext(description: viewsContextDescription, value: jsonString(views)))
+    }
+    return out
+}
+
+/// P2 trigger → user 메시지. content 의 gentizer_trigger 키로 일반 채팅과 구분
+public func toAGUITriggerMessage(_ event: TriggerEvent) -> AGUIMessage {
+    let content: JSONValue = ["gentizer_trigger": ["name": .string(event.name), "payload": .object(event.payload)]]
+    return AGUIMessage(id: "gentizer-trigger-\(UUID().uuidString.lowercased())", role: "user", content: jsonString(content))
 }
 
 /// 응답이 없는 · 등록된 이름의 tool call 을 순서대로 실행하고 tool 메시지를 돌려준다
