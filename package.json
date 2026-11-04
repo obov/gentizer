@@ -4,7 +4,8 @@
   "scripts": {
     "postinstall": "gnam link",
     "check": "npm run check --workspaces --if-present",
-    "build": "npm run build -w @gentizer/core -w @gentizer/a2ui -w @gentizer/ag-ui -w @gentizer/react"
+    "build": "npm run build -w @gentizer/core -w @gentizer/a2ui -w @gentizer/ag-ui -w @gentizer/react",
+    "check:swift": "swift test --package-path swift"
   },
   "devDependencies": {
     "@obov/gnam": "^0.8.0"
