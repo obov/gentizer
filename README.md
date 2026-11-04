@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core 구현. 바인딩 · 전송 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 구현. 전송 · HTML 속성 · Swift 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -36,19 +36,19 @@ L1 transport   AG-UI · MCP · WebSocket (agent-loader = 어댑터 1개)
 ### 앱 개발자가 추가하는 코드 (웹 예시, 초안)
 
 ```html
-<button data-agent-action="cart.add" data-agent-desc="장바구니 담기" onclick="addToCart()">담기</button>
+<button data-agent-action="cart_add" data-agent-desc="장바구니 담기" onclick="addToCart()">담기</button>
 <input data-agent-field="search" placeholder="검색">
 <section data-agent-view="cart">…</section>
 ```
 
 ```js
-agent.expose("filter.set", {
+agent.expose("filter_set", {
   description: "목록 필터 변경",
   input: { type: "object", properties: { category: { type: "string" } } },
   run: (i) => setFilter(i.category),
 })
 agent.state("cart", () => store.cart)                                        // 에이전트가 읽을 상태
-saveBtn.addEventListener("click", () => agent.trigger("form.saved", { id }))  // P2: 채팅 없이 개입
+saveBtn.addEventListener("click", () => agent.trigger("form_saved", { id }))  // P2: 채팅 없이 개입
 ```
 
 - 실제 DOM 이벤트(click · input)를 발생시켜 실행. React · Vue는 그 이벤트에 그대로 반응. React 제어 input 값 설정은 라이브러리가 처리
@@ -94,6 +94,8 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 > [!NOTE]
 > 확인 결과 (2026-11-04): `@a2ui/react` 0.15 는 v0.9 컴포넌트 API, v1.0 RPC (`callRendererFunction`) 는 `@a2ui/web_core` 0.15 `RpcHandler` 에 있음.
 > `A2UISwiftUI` 도 v1.0 `RPCHandler` 보유. 상세 `specs/core.md`
+>
+> A2UI v1.0 function 이름은 UAX #31 식별자만 허용 (`cart.add` 거부) → 표시 이름은 `cart_add` 형식
 
 ## 비슷한 프로젝트와 차이
 
@@ -128,8 +130,8 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 
 ```text
 1. (완료) @a2ui/react 0.15 · A2UISwiftUI 의 v1.0 지원 범위 확인
-2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 (`packages/core`)
-3. React 바인딩 + Next.js ssr:false 래퍼
+2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
+3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
 4. 전송 어댑터: AG-UI · agent-loader WebSocket
 5. Swift 바인딩
 6. L4 skill (대상 프로젝트에 표시 추가 자동화)
