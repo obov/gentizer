@@ -21,7 +21,7 @@ jobs:
       - run: npx gnam verify
 
   swift:
-    runs-on: macos-15
+    runs-on: macos-15-intel  # arm64 runner 용량 부족으로 할당 실패 반복 (2026-11-05)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
