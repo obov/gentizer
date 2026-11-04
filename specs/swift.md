@@ -63,7 +63,6 @@ export    main push, check · swift 통과 후. checkout fetch-depth 0 → expor
           자격 = secret GENTIZER_SWIFT_DEPLOY_KEY (gentizer-swift 쓰기 deploy key, ssh), git url insteadOf 로 https → ssh
 ```
 
-- 미구현: GitHub 저장소 (이 저장소 원격 · gentizer-swift) 생성 · 첫 push · secret 등록
 
 ## conformance 실행기
 
