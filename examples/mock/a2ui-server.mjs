@@ -2,7 +2,7 @@
 //   POST /a2ui/catalog   앱이 등록한 액션의 catalog (toA2uiCatalog 결과)
 //   GET  /a2ui/events    SSE. 서버 → 브라우저 callRendererFunction 메시지
 //   POST /a2ui/chat      { text } → 판단해서 callRendererFunction 전송
-//   POST /a2ui/response  브라우저의 rendererFunctionResponse (로그만)
+//   POST /a2ui/response  렌더러 → 에이전트 메시지 (rendererFunctionResponse · action · error 등, 로그만)
 import { createServer } from "node:http";
 import { decide, HELP } from "./intent.mjs";
 

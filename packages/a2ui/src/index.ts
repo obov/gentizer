@@ -62,3 +62,4 @@ export function createA2uiBridge(runtime: AgentRuntime, options: { catalogId: st
     },
   };
 }
+export * from "./surface-host.js";

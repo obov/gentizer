@@ -1,5 +1,5 @@
 import { createAgentRuntime } from "@gentizer/core";
-import { createA2uiBridge } from "@gentizer/a2ui";
+import { createA2uiSurfaceHost } from "@gentizer/a2ui";
 import { runWithFrontendTools } from "@gentizer/ag-ui";
 import { HttpAgent } from "@ag-ui/client";
 
@@ -79,18 +79,22 @@ async function sendAgUi(text) {
   log("sys", `rounds ${rounds}`);
 }
 
-// A2UI: 서버가 SSE 로 보낸 callRendererFunction 을 브리지가 실행, 응답을 POST
+// A2UI: 서버가 SSE 로 보낸 메시지를 host 가 처리 (callRendererFunction → 액션 실행), 렌더러 → 에이전트 메시지는 POST
 const catalogId = `${location.origin}/catalog.json`;
-const bridge = createA2uiBridge(runtime, { catalogId });
 const post = (path, body) =>
   fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then((r) => r.json());
-post("/a2ui/catalog", bridge.catalog());
-new EventSource("/a2ui/events").onmessage = async (e) => {
+const host = createA2uiSurfaceHost(runtime, {
+  catalogId,
+  send: (message) => {
+    log("sys", `→ ${JSON.stringify(message)}`);
+    post("/a2ui/response", message);
+  },
+});
+post("/a2ui/catalog", host.catalog());
+new EventSource("/a2ui/events").onmessage = (e) => {
   const message = JSON.parse(e.data);
-  log("sys", `← callRendererFunction ${JSON.stringify(message.callRendererFunction.callFunction)}`);
-  const response = await bridge.handle(message);
-  log("sys", `→ rendererFunctionResponse ${JSON.stringify(response.rendererFunctionResponse)}`);
-  await post("/a2ui/response", response);
+  log("sys", `← ${JSON.stringify(message)}`);
+  host.process(message);
 };
 async function sendA2ui(text) {
   const { reply } = await post("/a2ui/chat", { text });
