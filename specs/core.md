@@ -25,7 +25,7 @@ views     이름 → { description }
 
 ## A2UI v1.0 변환
 
-미구현: `toA2uiCatalog(m, { catalogId })` → A2UI v1.0 catalog 정의 (`catalogId` · `functions`).
+미구현: `toA2uiCatalog(m, { catalogId })` → A2UI v1.0 catalog 정의 (`protocolVersion: "1.0"` · `catalogId` · `functions` · `metadata`?). 잘못된 manifest 는 `InvalidManifestError`
 
 | manifest | A2UI v1.0 function 정의 |
 |---|---|
@@ -34,7 +34,12 @@ views     이름 → { description }
 | `input` | `properties.args`, `required: ["@call"]` (input 의 required 가 있으면 `"args"` 추가) |
 | `returns` | `returnType` |
 | 항상 | `allowedCallers: "agentOnly"` (D2: 표시한 것만 에이전트가 호출, 렌더러 식 바인딩에서 호출 불가) |
-| `confirm: true` | `requiresUserActivation: true` (승인 카드 클릭이 사용자 조작) |
+| `confirm: true` | function 정의에는 표시 없음. catalog `metadata.extensions.gentizer.confirm` 배열에 이름 추가 |
+
+- `requiresUserActivation` 미사용: v1.0 은 `requiresUserActivation: true` 를 `allowedCallers: "rendererOnly"` 에만 허용 (에이전트 호출 불가)
+- function 정의는 `unevaluatedProperties: false` 라 확장 키 불가 → 승인 대상 목록은 catalog 단위 extension
+- 승인 카드 표시 · 승인 전 실행 차단은 바인딩 런타임 책임 (미구현: L3)
+- confirm 액션이 없으면 `metadata` 생략
 
 state · views 는 catalog 에 들어가지 않는다. 미구현: DataModel 동기화 (state) · 화면 맥락 확장 (views).
 
