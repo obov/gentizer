@@ -25,7 +25,7 @@ views     이름 → { description }
 
 ## A2UI v1.0 변환
 
-미구현: `toA2uiCatalog(m, { catalogId })` → A2UI v1.0 catalog 정의 (`protocolVersion: "1.0"` · `catalogId` · `functions` · `metadata`?). 잘못된 manifest 는 `InvalidManifestError`
+`toA2uiCatalog(m, { catalogId })` → A2UI v1.0 catalog 정의 (`protocolVersion: "1.0"` · `catalogId` · `functions` · `metadata`?). 잘못된 manifest 는 `InvalidManifestError`
 
 | manifest | A2UI v1.0 function 정의 |
 |---|---|
