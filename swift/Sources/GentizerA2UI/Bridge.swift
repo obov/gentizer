@@ -5,10 +5,13 @@ import Gentizer
 public final class A2UIBridge {
     public let runtime: AgentRuntime
     public let catalogId: String
+    /// surfaceId 있는 메시지의 surface 존재 확인. nil = surface 없음
+    public let surfaceExists: (@MainActor (String) -> Bool)?
 
-    public init(_ runtime: AgentRuntime, catalogId: String) {
+    public init(_ runtime: AgentRuntime, catalogId: String, surfaceExists: (@MainActor (String) -> Bool)? = nil) {
         self.runtime = runtime
         self.catalogId = catalogId
+        self.surfaceExists = surfaceExists
     }
 
     /// 현재 등록된 액션의 A2UI v1.0 catalog. 에이전트에 보낼 정의
@@ -29,7 +32,9 @@ public final class A2UIBridge {
             respond(error: A2UIFunctionError(code: A2UIFunctionError.invalidFunctionCall, message: m))
         }
 
-        if let surfaceId = body.surfaceId { return invalid("Surface not found: \(surfaceId)") }
+        if let surfaceId = body.surfaceId, surfaceExists?(surfaceId) != true {
+            return invalid("Surface not found: \(surfaceId)")
+        }
         let target = call.catalogId ?? catalogId
         guard target == catalogId else { return invalid("Catalog not found: \(target)") }
         guard message.version == "1.0" else {

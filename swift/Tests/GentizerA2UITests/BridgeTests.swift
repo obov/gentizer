@@ -7,10 +7,10 @@ import Testing
 
 @MainActor
 struct BridgeTests {
-    private func bridge() throws -> A2UIBridge {
+    private func bridge(surfaceExists: (@MainActor (String) -> Bool)? = nil) throws -> A2UIBridge {
         let rt = AgentRuntime()
         try rt.action("ping", ActionDef(description: "핑")) { _ in .null }
-        return A2UIBridge(rt, catalogId: "cat")
+        return A2UIBridge(rt, catalogId: "cat", surfaceExists: surfaceExists)
     }
 
     private func message(_ json: String) throws -> A2UICallRendererFunctionMessage {
@@ -38,6 +38,14 @@ struct BridgeTests {
         let r = try await bridge().handle(message(#"{"version":"1.0","callRendererFunction":{"functionCallId":"c2","callFunction":{"@call":"none"}}}"#))
         #expect(try encoded(r) == ["version": "1.0", "rendererFunctionResponse": [
             "functionCallId": "c2", "error": ["code": "INVALID_FUNCTION_CALL", "message": "Function not found: none"]]])
+    }
+
+    @Test func knownSurfaceRuns() async throws {
+        let b = try bridge { $0 == "s1" }
+        let ok = try await b.handle(message(#"{"version":"1.0","callRendererFunction":{"functionCallId":"c4","surfaceId":"s1","callFunction":{"@call":"ping"}}}"#))
+        #expect(ok.rendererFunctionResponse.error == nil)
+        let ng = try await b.handle(message(#"{"version":"1.0","callRendererFunction":{"functionCallId":"c5","surfaceId":"s2","callFunction":{"@call":"ping"}}}"#))
+        #expect(ng.rendererFunctionResponse.error == A2UIFunctionError(code: "INVALID_FUNCTION_CALL", message: "Surface not found: s2"))
     }
 
     @Test func surfaceIdRejected() async throws {
