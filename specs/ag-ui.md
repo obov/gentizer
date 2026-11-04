@@ -35,3 +35,17 @@ runWithFrontendTools(agent, runtime, options?) → { rounds, toolMessages }
 미구현: P2 이벤트형 `trigger`.
 
 agent-loader 연동은 어댑터 패키지가 아니라 L4 skill 로 한다. gentizer 와 agent-loader 는 서로 의존하지 않는다.
+
+## Swift
+
+target · product `GentizerAGUI` (`swift/Sources/GentizerAGUI`), 의존성 `Gentizer` 만. AG-UI Swift SDK 에 의존하지 않고 AG-UI 메시지 형태의 Codable 타입을 둔다.
+
+```text
+AGUITool · AGUIContext · AGUIMessage · AGUIToolCall   AG-UI JSON 과 같은 키 (camelCase)
+toAGUITools(manifest) · toAGUIContext(runtime)        TS 와 같은 규칙
+runFrontendTools(runtime, messages) async             TS 와 같은 규칙 (대상 · 파싱 · tool 메시지 형식 · 순서 실행)
+```
+
+- 문자열 JSON (`content` · context `value`) 은 키 정렬 직렬화
+- conformance `ag-ui` suite 를 Swift 실행기에서도 통과
+- 미구현: 전체. `runWithFrontendTools` (에이전트 연결) 는 AG-UI Swift 클라이언트 선택 (README Q3) 후
