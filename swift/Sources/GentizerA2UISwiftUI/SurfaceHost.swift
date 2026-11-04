@@ -1,5 +1,6 @@
 import A2UICore
-import BasicCatalog
+import A2UISwiftUI
+import BasicCatalogSwiftUI
 import Combine
 import Foundation
 import OrderedJSON
@@ -28,14 +29,24 @@ public final class A2UISurfaceHost: ObservableObject {
     private var offTrigger: (@MainActor () -> Void)?
     /// surface 별로 지난번에 쓴 상태 이름. 해제된 이름을 지우는 데 쓴다
     private var written: [String: Set<String>] = [:]
+    /// 렌더 · 검증에 쓰는 catalog (app catalog 가 있으면 맨 앞)
+    let catalogs: [Catalog<ComponentImplementation>]
+    private let appComponents: [A2UIAppComponent]
+    private let appCatalogId: String?
 
-    public init(_ runtime: AgentRuntime, catalogId: String, stateSync: Bool = true,
-                triggerSurfaceId: String = "gentizer", send: @escaping A2UISend = { _ in }) {
+    /// components 스키마가 JSON Schema 로 읽히지 않으면 throw
+    public init(_ runtime: AgentRuntime, catalogId: String, components: [A2UIAppComponent] = [],
+                componentCatalogId: String? = nil, stateSync: Bool = true,
+                triggerSurfaceId: String = "gentizer", send: @escaping A2UISend = { _ in }) throws {
         self.runtime = runtime
         self.send = send
         self.stateSync = stateSync
         self.triggerSurfaceId = triggerSurfaceId
-        processor = MessageProcessor(catalogs: BasicCatalog.allCatalogs)
+        appComponents = components
+        appCatalogId = components.isEmpty ? nil : (componentCatalogId ?? "\(catalogId)#components")
+        let app = try appCatalogId.map { try makeAppCatalog(id: $0, components: components) }
+        catalogs = (app.map { [$0] } ?? []) + BasicCatalogImplementation.allCatalogs
+        processor = MessageProcessor(catalogs: catalogs)
         bridge = A2UIBridge(runtime, catalogId: catalogId) { [weak self] id in
             self?.processor.surfaceGroupModel[id] != nil
         }
@@ -60,6 +71,13 @@ public final class A2UISurfaceHost: ObservableObject {
 
     /// 현재 등록된 액션의 A2UI v1.0 catalog
     public func catalog() throws -> GentizerJSONValue { try bridge.catalog() }
+
+    /// 에이전트에 보낼 앱 컴포넌트 catalog 정의. 앱 컴포넌트가 없으면 nil
+    public func componentCatalog() -> GentizerJSONValue? {
+        guard let appCatalogId else { return nil }
+        let components = Dictionary(appComponents.map { ($0.name, $0.schema) }, uniquingKeysWith: { _, last in last })
+        return ["catalogId": .string(appCatalogId), "protocolVersion": "1.0", "components": .object(components)]
+    }
 
     /// 활성 surface id (정렬)
     public var surfaceIDs: [String] { processor.surfaceGroupModel.surfacesMap.keys.sorted() }

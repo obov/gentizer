@@ -135,6 +135,9 @@ A2UISurfaceView(host:, surfaceID:)     SwiftUI. 활성 surface 면 A2UI Swift Su
 A2UIAppComponent(name, description:, properties: JSONValue = [:], required: [String] = []) { props in View }
     properties   JSON Schema properties (컴포넌트 속성). 스키마 = { type: object, description,
                  properties: { component: { const: name }, ...properties }, required: ["component", ...required] }
+A2UIProp             속성 스키마 상수 string · number · bool (값 또는 data model 바인딩) · action · child
+                     = A2UI v1.0 common_types $ref (https://a2ui.org/specification/v1_0/common_types.json#/$defs/…)
+                     A2UI 는 $ref 이름으로 바인딩 · action · 자식을 구분한다 (평 JSON Schema 는 리터럴 값만)
 A2UIComponentProps   id · string(_:) · double(_:) · bool(_:) (바인딩 해석 후 값) · child(_:) -> AnyView? · action(_:) -> (() -> Void)?
 A2UISurfaceHost(..., components: [A2UIAppComponent] = [], componentCatalogId: String? = nil)
     componentCatalogId   기본 "<catalogId>#components". components 가 비면 app catalog 없음

@@ -20,7 +20,7 @@ struct SurfaceHostTests {
             try rt.action("ping", ActionDef(description: "핑")) { _ in "pong" }
         }
         let sent = Sent()
-        let h = A2UISurfaceHost(rt, catalogId: "cat", stateSync: stateSync, triggerSurfaceId: triggerSurfaceId) {
+        let h = try A2UISurfaceHost(rt, catalogId: "cat", stateSync: stateSync, triggerSurfaceId: triggerSurfaceId) {
             sent.messages.append($0)
         }
         return (h, sent)
