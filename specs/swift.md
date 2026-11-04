@@ -60,7 +60,7 @@ CI (`.github/workflows/ci.yml`):
 check     push · PR. ubuntu, npm ci → npm run build → npm run check → npx gnam verify
 swift     push · PR. macos, swift test --package-path swift · swift build --package-path examples/swift/ShopExample
 export    main push, check · swift 통과 후. checkout fetch-depth 0 → export build swift → export push swift
-          자격 = secret GENTIZER_SWIFT_TOKEN (gentizer-swift 쓰기 권한 토큰), git url insteadOf 로 주입
+          자격 = secret GENTIZER_SWIFT_DEPLOY_KEY (gentizer-swift 쓰기 deploy key, ssh), git url insteadOf 로 https → ssh
 ```
 
 - 미구현: GitHub 저장소 (이 저장소 원격 · gentizer-swift) 생성 · 첫 push · secret 등록

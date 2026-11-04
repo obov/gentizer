@@ -44,12 +44,17 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
-      - name: 배포 저장소 자격 (gentizer-swift 쓰기 토큰)
+      - name: 배포 저장소 자격 (gentizer-swift 쓰기 deploy key)
         env:
-          GENTIZER_SWIFT_TOKEN: ${{ secrets.GENTIZER_SWIFT_TOKEN }}
+          DEPLOY_KEY: ${{ secrets.GENTIZER_SWIFT_DEPLOY_KEY }}
         run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/gentizer_swift
+          chmod 600 ~/.ssh/gentizer_swift
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global core.sshCommand "ssh -i ~/.ssh/gentizer_swift -o IdentitiesOnly=yes"
+          git config --global url."git@github.com:obov/gentizer-swift.git".insteadOf "https://github.com/obov/gentizer-swift.git"
           git config --global user.name "gentizer-export"
           git config --global user.email "gentizer-export@users.noreply.github.com"
-          git config --global url."https://x-access-token:${GENTIZER_SWIFT_TOKEN}@github.com/obov/gentizer-swift".insteadOf "https://github.com/obov/gentizer-swift"
       - run: npx gnam run export build swift
       - run: npx gnam run export push swift
