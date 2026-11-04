@@ -19,6 +19,22 @@
       "name": "tsconfig.base.json"
     },
     {
+      "name": "LICENSE"
+    },
+    {
+      "name": ".github",
+      "children": [
+        {
+          "name": "workflows",
+          "children": [
+            {
+              "name": "{kebab-case}.yml"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": ".agents",
       "children": []
     },
