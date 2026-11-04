@@ -2,9 +2,13 @@
   "name": "gentizer",
   "private": true,
   "scripts": {
-    "postinstall": "gnam link"
+    "postinstall": "gnam link",
+    "check": "npm run check --workspaces"
   },
   "devDependencies": {
     "@obov/gnam": "^0.4.0"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }
