@@ -19,7 +19,55 @@ createA2uiBridge(runtime, { catalogId })
 - `invoke` 실패는 `EXECUTION_ERROR`, message 앞에 runtime 오류 코드 (`DENIED: …`)
 - 성공 `value` 는 `invoke` 의 value
 
-미구현: `callAgentFunction` (P2 이벤트형) · DataModel 동기화 · 전송 (L1).
+## 웹 surface host
+
+`createA2uiSurfaceHost(runtime, options)` → 에이전트 ↔ 렌더러 메시지 양방향 진입점. 화면 그리기는 바인딩 (`specs/react.md` 'surface').
+`@a2ui/web_core` `MessageProcessor` (v1.0 basic catalog + `options.catalogs`) 와 위 브리지를 묶는다.
+
+```text
+options     catalogId · send(message) (렌더러 → 에이전트 메시지 하나) · catalogs? (추가 component catalog)
+            stateSync? (기본 true) · triggerSurfaceId? (기본 "gentizer")
+catalog()                           bridge.catalog()
+process(message) → Promise<void>    에이전트 → 렌더러 메시지 하나. reject 없음
+processor                           MessageProcessor (렌더러가 surface 를 얻는 곳)
+surfaceIds() · subscribe(listener)  활성 surface id (정렬) · 생성 · 삭제 알림. subscribe 는 해제 함수 반환
+callAgentFunction(surfaceId, call, { timeoutMs? }) → Promise<value>   P2. agentFunctionResponse 의 value 로 resolve, error 면 reject
+dataModel()                         { version: "1.0", surfaces } (sendDataModel 인 surface 의 data model)
+syncState()                         상태 · 화면을 모든 활성 surface data model 에 다시 쓴다
+dispose()                           구독 해제 · 대기 중 callAgentFunction reject
+```
+
+`process` 분기:
+
+```text
+callRendererFunction        bridge.handle → send(rendererFunctionResponse)
+createSurface · updateComponents · updateDataModel · deleteSurface · agentFunctionResponse   MessageProcessor
+JSON 이 아니거나 처리 실패   send({ version: "1.0", error: { code, message, surfaceId? · path? · functionCallId? } })
+```
+
+렌더러 → 에이전트 (`send`):
+
+```text
+rendererFunctionResponse    위 process 분기
+action                      surface 컴포넌트의 action (사용자 클릭 등). MessageProcessor action payload 그대로
+callAgentFunction           host.callAgentFunction · surface 안의 에이전트 함수 호출
+error                       process 분기의 처리 실패
+trigger                     runtime trigger 마다 action 하나
+                            { name, surfaceId: triggerSurfaceId, sourceComponentId: "gentizer", timestamp (ISO 8601), context: payload }
+```
+
+상태 · 화면 → DataModel (앱 → 에이전트 단방향):
+
+```text
+경로        /gentizer/state/<name> = readState(name) (값 없음 = null) · /gentizer/views = { <name>: <description> }
+시점        surface 생성 직후 · runtime 등록 · 해제 알림 · process 처리 뒤 · syncState()
+해제        등록 해제된 상태 키는 지운다
+쓰기 방향   data model 의 /gentizer 를 surface (TextField 등) 가 바꿔도 앱 상태는 바뀌지 않는다. 앱 변경은 액션으로만 (D2)
+stateSync   false 면 /gentizer 를 쓰지 않는다
+```
+
+- 전송 (L1) 은 앱이 고른다: `send` 로 내보내고 받은 메시지를 `process` 로 넣는다. A2UI 는 전송을 정하지 않는다 (A2A · SSE · WebSocket)
+- React 값 변경은 runtime 알림이 없으므로 바인딩이 렌더마다 `syncState()` 를 부른다 (`specs/react.md`)
 
 ## Swift 의존성
 
@@ -81,4 +129,16 @@ A2UISurfaceView(host:, surfaceID:)     SwiftUI. 활성 surface 면 A2UI Swift Su
 ```
 
 - component catalog 는 A2UI basic catalog. 앱 컴포넌트 catalog 등록 (Smart Wrapper) 미구현
-- 렌더러 → 에이전트 메시지 (오류 보고 · `action` · `callAgentFunction`) 전송 미구현 (L1)
+
+Swift 렌더러 → 에이전트 · 상태 동기화는 웹 surface host 와 같은 규칙:
+
+```text
+A2UISurfaceHost(runtime, catalogId:, stateSync: true, triggerSurfaceId: "gentizer", send:)
+  send: @MainActor (JSONValue) -> Void         렌더러 → 에이전트 메시지 하나 (A2UI v1.0 JSON)
+  process(message:) async                      callRendererFunction 응답도 send 로 (반환값 없음)
+  callAgentFunction(surfaceID:, name:, args:, timeoutSeconds:) async throws -> JSONValue
+  dataModel() -> JSONValue · syncState()
+```
+
+- action · error · callAgentFunction 은 A2UI Swift `MessageProcessor.outboundListener` 를 JSON 으로 바꿔 send
+- trigger action · `/gentizer/state` · `/gentizer/views` 경로 · 시점은 웹과 같다
