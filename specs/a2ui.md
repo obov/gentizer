@@ -30,21 +30,20 @@ A2UI Swift (`A2UISwiftUI` · `A2UISwiftCore`) 는 fork `https://github.com/obov/
           branch 의존은 버전으로 설치되는 gentizer-swift 에 넣을 수 없음 (SwiftPM 규칙)
 태그      0.1.0 = upstream main 43696ef (2026-11-04). upstream 갱신 시 fork 동기화 후 다음 버전 태그
 변경      fork 에 코드 수정 없음 (태그만). Apache-2.0 LICENSE 유지
-플랫폼    A2UI Swift 하한 iOS 17 · macOS 14 (gentizer Swift core 는 iOS 16 · macOS 13)
+플랫폼    A2UI Swift 하한 iOS 17 · macOS 14 = gentizer Swift 패키지 하한
 ```
 
-- 하한 iOS 17 · macOS 14 가 필요한 것은 surface 렌더링 (`A2UISwiftUI`). RPC 브리지는 A2UI Swift 에 의존하지 않는다 (아래 'Swift')
-- 미결: surface 렌더링 위치 (Gentizer 하한 상향 · 별도 패키지). 렌더링 작업 착수 때 결정
+- surface 렌더링 위치: 패키지 하한을 iOS 17 · macOS 14 로 올리고 같은 패키지의 target 으로 둔다 (별도 패키지 아님). RPC 브리지는 A2UI Swift 에 의존하지 않는다 (아래 'Swift')
 - upstream 이 SwiftPM 용 semver 태그를 붙이면 fork 대신 upstream 으로 전환
 
 ## Swift
 
-target · product `GentizerA2UI` (`swift/Sources/GentizerA2UI`), 의존성 `Gentizer` 만. 하한은 패키지와 같은 iOS 16 · macOS 13.
+target · product `GentizerA2UI` (`swift/Sources/GentizerA2UI`), 의존성 `Gentizer` 만. 하한은 패키지와 같은 iOS 17 · macOS 14.
 A2UI Swift `RPCHandler` 를 쓰지 않는다: 함수 실행이 동기라 async `runtime.invoke` (confirm 대기) 를 못 부르고, 실행 오류 message 를 고정 문구로 바꿔 `DENIED: …` 접두를 잃는다.
 
 ```text
 A2UICallRendererFunctionMessage · A2UIRendererFunctionResponseMessage   A2UI v1.0 JSON 과 같은 키 (Codable)
-A2UIBridge(runtime, catalogId:)      @MainActor
+A2UIBridge(runtime, catalogId:, surfaceExists:)   @MainActor. surfaceExists 기본 nil (surface 없음)
   catalog() throws -> JSONValue      toA2uiCatalog(runtime.manifest(), catalogId:)
   handle(message) async -> response  throw 없음
 ```
@@ -62,6 +61,24 @@ A2UIBridge(runtime, catalogId:)      @MainActor
 ```
 
 - 응답 `version` 은 메시지 `version`, `functionCallId` 는 메시지 값
-- `surfaceId` 있는 메시지는 surface 가 없으므로 INVALID_FUNCTION_CALL "Surface not found: <id>" (TS 와 같음)
+- `surfaceId` 있는 메시지는 `surfaceExists(id)` 가 false (또는 nil) 이면 INVALID_FUNCTION_CALL "Surface not found: <id>" (TS 와 같음). true 면 surface 없는 메시지와 같은 경로
 - 인자 검증은 runtime 규칙 (object · required) 까지. 그 외 JSON Schema 검증 (타입 · enum 등) 미구현
 - conformance `a2ui` suite 를 Swift 실행기에서도 통과
+
+## Swift surface 렌더링
+
+target · product `GentizerA2UISwiftUI` (`swift/Sources/GentizerA2UISwiftUI`), 의존성 `GentizerA2UI` · A2UI Swift (`A2UISwiftCore` · `A2UISwiftUI` · `BasicCatalogSwiftUI`).
+에이전트 → 렌더러 메시지 중 surface 메시지는 A2UI Swift `MessageProcessor` 로, `callRendererFunction` 은 `A2UIBridge` 로 보낸다.
+
+```text
+A2UISurfaceHost(runtime, catalogId:)   @MainActor ObservableObject. A2UIBridge 를 surfaceExists = 활성 surface 로 만든다
+  catalog() throws -> JSONValue        bridge.catalog()
+  process(message: JSONValue) async -> JSONValue?
+                                       callRendererFunction → bridge.handle 응답 JSON
+                                       그 외 (createSurface · updateComponents · updateDataModel · deleteSurface) → MessageProcessor, nil
+  surfaceIDs: [String]                 활성 surface (id 정렬)
+A2UISurfaceView(host:, surfaceID:)     SwiftUI. 활성 surface 면 A2UI Swift Surface (basic catalog v1.0), 없으면 EmptyView
+```
+
+- component catalog 는 A2UI basic catalog. 앱 컴포넌트 catalog 등록 (Smart Wrapper) 미구현
+- 렌더러 → 에이전트 메시지 (오류 보고 · `action` · `callAgentFunction`) 전송 미구현 (L1)
