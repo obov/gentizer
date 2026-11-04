@@ -6,9 +6,10 @@
 ## 저장소 배치
 
 ```text
-/package.json · /Package.swift   루트에는 언어별 빌드 진입점만 (SwiftPM 은 git URL 설치 시 루트만 읽음)
+/package.json                    npm workspaces 루트
 /packages/<pkg>/                 npm 패키지. 단위 테스트는 test/
-/swift/  /dart/  /kotlin/        언어별 구현. 단위 테스트는 각 언어 관례 위치
+/swift/                          Swift 패키지 (Package.swift 포함). 배포 저장소 gentizer-swift 로 export (specs/swift.md)
+/dart/  /kotlin/                 언어별 구현. 단위 테스트는 각 언어 관례 위치
 /conformance/<suite>/*.json      공통 케이스
 /examples/mock/                  mock 에이전트 (모든 예시 공유)
 /examples/<platform>/            같은 미니 상점 UI
@@ -16,7 +17,7 @@
 
 - 단위 테스트: 언어 고유 동작만 (React hooks 생명주기, web_core 파싱 등)
 - 공통 동작 테스트는 conformance 케이스로만 둔다 (언어별 중복 금지)
-- 미구현: `/Package.swift` · `/swift/` (Swift plan 에서)
+- 폴더 구조 검사: `.gnam/layout.json` (gnam layout)
 
 ## 케이스 파일
 
@@ -89,4 +90,5 @@ confirm "approve" | "deny" | "throw" | "absent"        runtime 생성 옵션. ab
 - 언어마다 하나씩, 각 언어 테스트 명령 (`npm run check` · `swift test`) 에 포함
 - `skip` 목록: 케이스 id 와 이유. 미구현 suite 는 suite 단위 skip 허용
 - 케이스 파일이 없거나 형식 위반 (schema.json) 이면 실패
+- Swift 실행기 위치: `swift/Tests/GentizerConformanceTests/` (현재 전체 suite skip)
 - TS 실행기 위치: `packages/core/test/conformance.test.ts` (validate · catalog · runtime), `packages/ag-ui/test/conformance.test.ts`, `packages/a2ui/test/conformance.test.ts`
