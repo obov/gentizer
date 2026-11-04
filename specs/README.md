@@ -10,6 +10,7 @@ react.md     React · Next.js 바인딩 (hooks)
 a2ui.md      A2UI v1.0 callRendererFunction → 런타임 브리지 (웹)
 ag-ui.md     AG-UI 전송 어댑터 (frontend tool · context)
 conformance.md  언어 공통 JSON 케이스 · 저장소 배치
+swift.md     Swift 패키지 배치 · gentizer-swift 배포 · conformance 실행기
 ```
 
 ## 커밋
