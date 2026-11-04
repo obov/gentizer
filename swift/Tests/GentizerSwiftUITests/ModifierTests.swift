@@ -26,6 +26,7 @@ private struct Shop: View {
 private func host(_ view: some View, _ rt: AgentRuntime) -> (NSWindow, NSHostingView<AnyView>) {
     let hosting = NSHostingView(rootView: AnyView(view.agentRuntime(rt)))
     let window = NSWindow(contentRect: .init(x: 0, y: 0, width: 200, height: 200), styleMask: [], backing: .buffered, defer: false)
+    window.isReleasedWhenClosed = false  // close() 후 ARC 와 이중 해제 방지
     window.contentView = hosting
     window.orderFront(nil)
     return (window, hosting)
@@ -73,6 +74,7 @@ struct ModifierTests {
         let rt = AgentRuntime()
         let hosting = NSHostingView(rootView: Text("x").agentView("v", ViewDef(description: "v")))
         let window = NSWindow(contentRect: .init(x: 0, y: 0, width: 50, height: 50), styleMask: [], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
         window.contentView = hosting
         defer { window.close() }
         await settle()
