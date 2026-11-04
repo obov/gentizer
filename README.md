@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (conformance 전체 suite 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트) · A2UI RPC 브리지. HTML 속성 · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (conformance 전체 suite 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트) · A2UI RPC 브리지 · A2UI surface 렌더링 (basic catalog, iOS 17 · macOS 14). HTML 속성 · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -86,7 +86,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 |---|---|---|
 | React | `@a2ui/react` 0.15 | 0.x라 호환 깨짐 잦음 → 버전 고정 |
 | Next.js | 같은 패키지 | SSR 버그(#3158 · #2080) open → `ssr:false` 래퍼 내장 |
-| Swift | 공식 `A2UISwiftUI` | upstream 태그가 SwiftPM 형식 아님 → fork `obov/a2ui` 에 semver 태그. 커뮤니티 BBC6BAE9/a2ui-swift는 v0.9.1까지 |
+| Swift | 공식 `A2UISwiftUI` | upstream 태그가 SwiftPM 형식 아님 → fork `obov/a2ui` 에 semver 태그. 하한 iOS 17 · macOS 14 → 패키지 하한도 같게. 커뮤니티 BBC6BAE9/a2ui-swift는 v0.9.1까지 |
 | Vue (2차) | 커뮤니티 `a2ui-vue` | |
 | Kotlin (2차) | `androidx.a2ui` alpha | v0.9.1만 지원 → 앱 액션 호출 경로 없음 (R7) |
 | RN (2차) | 커뮤니티 구현 1개 | 1인 유지 |
@@ -134,7 +134,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
 3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
 4. (완료) 전송 어댑터: AG-UI (`packages/ag-ui`). agent-loader 연동은 6 의 skill 로 (상호 의존 없음)
-5. (일부) Swift: core (`swift/Sources/Gentizer`) · 배포 설정 · conformance 실행기. SwiftUI 수정자 (`GentizerSwiftUI`) · AG-UI 변환 · 에이전트 연결 (`GentizerAGUI`) · A2UI RPC 브리지 (`GentizerA2UI`). 남음: A2UI surface 렌더링 (미결: 위치, specs/a2ui.md) · confirm UI · examples/swift · 배포 저장소 생성
+5. (일부) Swift: core (`swift/Sources/Gentizer`) · 배포 설정 · conformance 실행기. SwiftUI 수정자 (`GentizerSwiftUI`) · AG-UI 변환 · 에이전트 연결 (`GentizerAGUI`) · A2UI RPC 브리지 (`GentizerA2UI`) · surface 렌더링 (`GentizerA2UISwiftUI`). 남음: 앱 컴포넌트 catalog · 렌더러 → 에이전트 메시지 전송 · confirm UI · examples/swift · 배포 저장소 생성
 6. L4 skill (대상 프로젝트에 표시 추가 자동화)
 ```
 
