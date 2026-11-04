@@ -5,7 +5,8 @@
 
 ```text
 <파일명>.md  <한 줄 설명>
-core.md      L2 manifest 스키마 · 검증 · A2UI v1.0 catalog 변환
+core.md      L2 manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임
+react.md     React · Next.js 바인딩 (hooks)
 ```
 
 ## 커밋
