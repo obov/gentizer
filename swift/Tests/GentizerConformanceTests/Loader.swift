@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import Gentizer
 
 /// conformance 케이스 하나. id = <suite>/<파일명>#<name>
 struct LoadedCase: Sendable, CustomTestStringConvertible {

@@ -1,16 +1,18 @@
 import Foundation
+import Gentizer
 import Testing
 
 /// suite → skip 사유. 구현하면 지우고 아래 실행 테스트를 채운다
 let skippedSuites: [String: String] = [
-    "validate": "Swift core 미구현",
-    "catalog": "Swift core 미구현",
-    "runtime": "Swift core 미구현",
     "ag-ui": "Swift AG-UI 어댑터 미구현",
     "a2ui": "Swift A2UI 브리지 미구현",
 ]
 
 let allSuites = ["validate", "catalog", "runtime", "ag-ui", "a2ui"]
+
+func cases(_ suite: String) throws -> [LoadedCase] {
+    try loadSuite(suite, in: try conformanceDirectory())
+}
 
 @Suite("conformance 형식")
 struct ConformanceFormatTests {
@@ -51,11 +53,24 @@ struct ConformanceFormatTests {
     }
 }
 
-@Suite("conformance 실행")
-struct ConformanceRunTests {
-    @Test("validate", .disabled("Swift core 미구현")) func validate() {}
-    @Test("catalog", .disabled("Swift core 미구현")) func catalog() {}
-    @Test("runtime", .disabled("Swift core 미구현")) func runtime() {}
+@Suite("conformance validate")
+struct ValidateConformance {
+    @Test(arguments: try cases("validate"))
+    func run(_ c: LoadedCase) throws {
+        let result = validateManifest(c.value["manifest"] ?? .null)
+        let expect = try #require(c.value["expect"])
+        if expect["ok"] == .bool(true) {
+            #expect(result == .ok)
+        } else {
+            let want = (expect["errorPaths"]?.arrayValue ?? []).compactMap(\.stringValue).sorted()
+            #expect(result != .ok)
+            #expect(result.errors.map(\.path).sorted() == want)
+        }
+    }
+}
+
+@Suite("conformance 미구현")
+struct SkippedConformance {
     @Test("ag-ui", .disabled("Swift AG-UI 어댑터 미구현")) func agUi() {}
     @Test("a2ui", .disabled("Swift A2UI 브리지 미구현")) func a2ui() {}
 }
