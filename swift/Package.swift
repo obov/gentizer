@@ -7,10 +7,13 @@ let package = Package(
     platforms: [.iOS(.v16), .macOS(.v13)],
     products: [
         .library(name: "Gentizer", targets: ["Gentizer"]),
+        .library(name: "GentizerSwiftUI", targets: ["GentizerSwiftUI"]),
     ],
     targets: [
         .target(name: "Gentizer"),
+        .target(name: "GentizerSwiftUI", dependencies: ["Gentizer"]),
         .testTarget(name: "GentizerTests", dependencies: ["Gentizer"]),
         .testTarget(name: "GentizerConformanceTests", dependencies: ["Gentizer"]),
+        .testTarget(name: "GentizerSwiftUITests", dependencies: ["GentizerSwiftUI"]),
     ]
 )
