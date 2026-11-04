@@ -43,4 +43,27 @@ version   swift/VERSION
   1. 저장소 루트 `conformance/` (개발 저장소, `swift/` 의 부모)
   2. 패키지 `Tests/Conformance/` (배포 저장소, include 복사본)
 - 케이스 파일 읽기 규칙은 `specs/conformance.md` '실행기' 와 같다 (suite 불일치 · id 중복 · 케이스 없음 = 실패). schema.json 검사는 TS 실행기만
-- skip 은 suite 단위 사유 또는 케이스 id 단위. 미구현: Swift core (전체 suite skip)
+- skip 은 suite 단위 사유 또는 케이스 id 단위. 미구현: ag-ui · a2ui suite (skip)
+
+## core API
+
+TS core (`specs/core.md`) 와 같은 규칙 · 같은 오류 code. 차이는 언어 표현만.
+
+```text
+JSONValue          null · bool · number(Double) · string · array · object. Codable · 리터럴 초기화
+                   JSONValue(encoding: Encodable) · decode(as:) 로 앱 타입과 변환
+ActionDef          description · input: JSONValue? (object schema) · confirm: Bool? · returns: ReturnType?
+StateDef · ViewDef description (· schema: JSONValue?)
+Manifest           version · actions · state · views. 구역은 등록 순서를 유지하는 이름 → 정의 목록
+                   Manifest(json:) 는 검증 실패 시 InvalidManifestError. json 속성 = JSON 표현
+validateManifest   (JSONValue) -> ValidationResult. 오류 path 는 TS 와 같은 문자열
+toA2uiCatalog      (Manifest, catalogId:) throws -> JSONValue (A2UI v1.0 catalog)
+AgentRuntime       @MainActor class. action · state · view 등록은 해제 함수 반환 (자기 등록만 해제),
+                   같은 구역 같은 이름은 DuplicateNameError. manifest() · readState · subscribe · invoke
+invoke             (name, args: JSONValue = {}) async -> InvokeResult. 검사 순서 TS 와 같음
+                   NOT_FOUND → INVALID_ARGS → DENIED → EXECUTION_ERROR. run 이 throw = EXECUTION_ERROR
+confirm            init(confirm:) 콜백 async throws -> Bool. 없음 · false · throw = DENIED
+```
+
+- `AgentRuntime` 이 `@MainActor` 인 이유: 액션 실행 함수 대부분이 SwiftUI 상태를 바꾼다
+- 미구현: 전체 (core 이식 plan)
