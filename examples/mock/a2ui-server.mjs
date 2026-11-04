@@ -1,7 +1,7 @@
 // mock A2UI v1.0 agent. 브라우저 ↔ 서버
 //   POST /a2ui/catalog   앱이 등록한 액션의 catalog (toA2uiCatalog 결과)
 //   GET  /a2ui/events    SSE. 서버 → 브라우저 callRendererFunction 메시지
-//   POST /a2ui/chat      { text } → 판단해서 callRendererFunction 전송
+//   POST /a2ui/chat      { text } → 판단해서 callRendererFunction 전송. "추천" → ProductCard surface (앱 컴포넌트 catalog 가 있을 때)
 //   POST /a2ui/response  렌더러 → 에이전트 메시지 (rendererFunctionResponse · action · error 등, 로그만)
 import { createServer } from "node:http";
 import { decide, HELP } from "./intent.mjs";
@@ -9,6 +9,7 @@ import { decide, HELP } from "./intent.mjs";
 const PORT = Number(process.env.A2UI_PORT ?? 8781);
 const clients = new Set();
 let catalog = null;
+let components = null; // 앱 컴포넌트 catalog (POST /a2ui/components)
 let seq = 0;
 
 const send = (msg) => {
@@ -36,8 +37,28 @@ createServer(async (req, res) => {
     console.log(`[a2ui] catalog ${catalog.catalogId} · functions ${Object.keys(catalog.functions).join(",")}`);
     return json(res, 200, { ok: true });
   }
+  if (req.method === "POST" && url === "/a2ui/components") {
+    components = await readJson(req);
+    console.log(`[a2ui] components ${components.catalogId} · ${Object.keys(components.components).join(",")}`);
+    return json(res, 200, { ok: true });
+  }
   if (req.method === "POST" && url === "/a2ui/chat") {
     const { text = "" } = await readJson(req);
+    if (/추천|recommend/.test(text)) {
+      if (!components?.components?.ProductCard) return json(res, 200, { reply: "ProductCard 컴포넌트 미등록" });
+      const surfaceId = `rec-${++seq}`;
+      send({ version: "1.0", createSurface: { surfaceId, catalogId: components.catalogId, sendDataModel: true } });
+      send({
+        version: "1.0",
+        updateComponents: {
+          surfaceId,
+          components: [
+            { id: "root", component: "ProductCard", name: "러닝화", price: 59000, action: { event: { name: "cart_add_request", context: { id: 1 } } } },
+          ],
+        },
+      });
+      return json(res, 200, { reply: `추천 surface ${surfaceId} 전송` });
+    }
     if (!catalog) return json(res, 409, { reply: "catalog 미수신" });
     const call = decide(text, Object.keys(catalog.functions));
     if (!call) return json(res, 200, { reply: `이해하지 못함. ${HELP}` });

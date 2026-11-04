@@ -1,6 +1,7 @@
 // mock AG-UI agent. POST /agent (RunAgentInput) → SSE 로 AG-UI 이벤트
 // 마지막 메시지가 user  → frontend tool 호출 (TOOL_CALL_*) 또는 안내 텍스트
 // 마지막 메시지가 tool  → 실행 결과를 요약한 텍스트
+// 마지막 메시지가 trigger (content 의 gentizer_trigger) → "앱 이벤트 수신" 텍스트
 import { createServer } from "node:http";
 import { decide, HELP } from "./intent.mjs";
 
@@ -17,6 +18,14 @@ function textEvents(text) {
   ];
 }
 
+function parseTrigger(text) {
+  try {
+    return JSON.parse(text)?.gentizer_trigger ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function respond(input) {
   const last = input.messages.at(-1);
   const tools = (input.tools ?? []).map((t) => t.name);
@@ -27,6 +36,8 @@ function respond(input) {
   }
 
   const text = typeof last?.content === "string" ? last.content : "";
+  const trigger = parseTrigger(text);
+  if (trigger) return textEvents(`앱 이벤트 수신: ${trigger.name} ${JSON.stringify(trigger.payload)}`);
   const call = decide(text, tools);
   if (!call) return textEvents(`이해하지 못함. 사용 가능 도구: ${tools.join(", ") || "없음"}. ${HELP}`);
 
