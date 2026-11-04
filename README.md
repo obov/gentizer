@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (conformance 전체 suite 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트) · A2UI RPC 브리지 · A2UI surface 렌더링 (basic catalog, iOS 17 · macOS 14). HTML 속성 · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (conformance 전체 suite 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트) · A2UI RPC 브리지 · A2UI surface 렌더링 (basic catalog, iOS 17 · macOS 14). 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -126,17 +126,6 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 | R6 | 핵심인 `callRendererFunction`이 v1.0 전용, v1.0 스펙은 RC |
 | R7 | Android 공식 렌더러 v0.9.1만 지원 → Kotlin 앱 액션 호출 경로 막힘 |
 | R8 | A2UI 렌더러 전반 0.x · preview → API 변경 시 바인딩 수정 필요 |
-
-## 다음 단계
-
-```text
-1. (완료) @a2ui/react 0.15 · A2UISwiftUI 의 v1.0 지원 범위 확인
-2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
-3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
-4. (완료) 전송 어댑터: AG-UI (`packages/ag-ui`). agent-loader 연동은 6 의 skill 로 (상호 의존 없음)
-5. (일부) Swift: core (`swift/Sources/Gentizer`) · 배포 설정 · conformance 실행기. SwiftUI 수정자 (`GentizerSwiftUI`) · AG-UI 변환 · 에이전트 연결 (`GentizerAGUI`) · A2UI RPC 브리지 (`GentizerA2UI`) · surface 렌더링 (`GentizerA2UISwiftUI`). 남음: 앱 컴포넌트 catalog · 렌더러 → 에이전트 메시지 전송 · confirm UI · examples/swift · 배포 저장소 생성
-6. L4 skill (대상 프로젝트에 표시 추가 자동화)
-```
 
 ## 참고
 
