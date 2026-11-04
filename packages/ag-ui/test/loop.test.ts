@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { Observable } from "rxjs";
 import { AbstractAgent, EventType, type BaseEvent, type RunAgentInput } from "@ag-ui/client";
 import { createAgentRuntime } from "@gentizer/core";
-import { runWithFrontendTools } from "../src/index.js";
+import { connectTriggers, runWithFrontendTools } from "../src/index.js";
 
 /** round 마다 script(input) 이 낸 이벤트를 그대로 흘리는 가짜 agent */
 class ScriptedAgent extends AbstractAgent {
@@ -85,5 +85,46 @@ describe("runWithFrontendTools", () => {
       ["0", "1"],
       ["1", "1"],
     ]);
+  });
+});
+
+const settle = () => new Promise((r) => setTimeout(r, 0));
+const triggerOf = (input: RunAgentInput) =>
+  input.messages
+    .filter((m) => m.role === "user" && typeof m.content === "string" && m.content.includes("gentizer_trigger"))
+    .map((m) => JSON.parse(m.content as string).gentizer_trigger.name as string);
+
+describe("connectTriggers", () => {
+  test("trigger 마다 메시지 추가 후 실행, 실행 중 trigger 는 순서대로 대기", async () => {
+    const rt = createAgentRuntime();
+    const agent = new ScriptedAgent(() => []);
+    const off = connectTriggers(agent, rt);
+    rt.trigger("form_saved", { id: 1 });
+    rt.trigger("page_opened");
+    for (let i = 0; i < 5; i++) await settle();
+    expect(agent.inputs.map(triggerOf)).toEqual([["form_saved"], ["form_saved", "page_opened"]]);
+    off();
+  });
+
+  test("실행 실패는 onError, 다음 trigger 는 계속", async () => {
+    const rt = createAgentRuntime();
+    const agent = new ScriptedAgent((_, round) => (round === 1 ? ([{ type: EventType.RUN_ERROR, message: "boom" }] as BaseEvent[]) : []));
+    const errors: string[] = [];
+    connectTriggers(agent, rt, { onError: (_, e) => errors.push(e.name) });
+    rt.trigger("first");
+    rt.trigger("second");
+    for (let i = 0; i < 5; i++) await settle();
+    expect(errors).toEqual(["first"]);
+    expect(agent.inputs).toHaveLength(2);
+  });
+
+  test("해제 후 trigger 는 실행 안 함", async () => {
+    const rt = createAgentRuntime();
+    const agent = new ScriptedAgent(() => []);
+    const off = connectTriggers(agent, rt);
+    off();
+    rt.trigger("form_saved");
+    await settle();
+    expect(agent.inputs).toHaveLength(0);
   });
 });

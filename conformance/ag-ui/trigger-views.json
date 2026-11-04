@@ -1,0 +1,136 @@
+{
+  "suite": "ag-ui",
+  "description": "views context · trigger 메시지 (specs/ag-ui.md)",
+  "cases": [
+    {
+      "name": "views 없으면 views context 없음",
+      "actions": [],
+      "states": [
+        {
+          "name": "cart",
+          "def": {
+            "description": "장바구니"
+          },
+          "value": [
+            1
+          ]
+        }
+      ],
+      "op": "context",
+      "expect": [
+        {
+          "description": "cart: 장바구니",
+          "value": [
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "views 는 상태 뒤 하나, 등록 순서",
+      "actions": [],
+      "states": [
+        {
+          "name": "cart",
+          "def": {
+            "description": "장바구니"
+          },
+          "value": []
+        }
+      ],
+      "views": [
+        {
+          "name": "product_list",
+          "def": {
+            "description": "상품 목록"
+          }
+        },
+        {
+          "name": "cart_panel",
+          "def": {
+            "description": "장바구니 패널"
+          }
+        }
+      ],
+      "op": "context",
+      "expect": [
+        {
+          "description": "cart: 장바구니",
+          "value": []
+        },
+        {
+          "description": "gentizer views: 현재 화면에 표시된 영역",
+          "value": {
+            "product_list": "상품 목록",
+            "cart_panel": "장바구니 패널"
+          }
+        }
+      ]
+    },
+    {
+      "name": "views 만",
+      "actions": [],
+      "views": [
+        {
+          "name": "checkout",
+          "def": {
+            "description": "결제"
+          }
+        }
+      ],
+      "op": "context",
+      "expect": [
+        {
+          "description": "gentizer views: 현재 화면에 표시된 영역",
+          "value": {
+            "checkout": "결제"
+          }
+        }
+      ]
+    },
+    {
+      "name": "trigger 메시지",
+      "actions": [],
+      "op": "triggerMessage",
+      "event": {
+        "name": "form_saved",
+        "payload": {
+          "id": 3
+        }
+      },
+      "expect": [
+        {
+          "role": "user",
+          "content": {
+            "gentizer_trigger": {
+              "name": "form_saved",
+              "payload": {
+                "id": 3
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "trigger 메시지 빈 payload",
+      "actions": [],
+      "op": "triggerMessage",
+      "event": {
+        "name": "page_opened",
+        "payload": {}
+      },
+      "expect": [
+        {
+          "role": "user",
+          "content": {
+            "gentizer_trigger": {
+              "name": "page_opened",
+              "payload": {}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
-import type { AbstractAgent, Context, Message, RunAgentParameters, Tool, ToolMessage } from "@ag-ui/client";
-import type { AgentRuntime, InvokeResult, Manifest } from "@gentizer/core";
+import type { AbstractAgent, Context, Message, RunAgentParameters, Tool, ToolMessage, UserMessage } from "@ag-ui/client";
+import type { AgentRuntime, InvokeResult, Manifest, TriggerEvent } from "@gentizer/core";
 
 const EMPTY_INPUT = { type: "object", properties: {} };
 
@@ -12,12 +12,72 @@ export function toAgUiTools(manifest: Manifest): Tool[] {
   }));
 }
 
-/** 상태마다 context 하나. value 는 현재 값의 JSON */
+export const VIEWS_CONTEXT_DESCRIPTION = "gentizer views: 현재 화면에 표시된 영역";
+
+/** 상태마다 context 하나 (value 는 현재 값의 JSON). 화면이 있으면 끝에 views context 하나 */
 export function toAgUiContext(runtime: AgentRuntime): Context[] {
-  return Object.entries(runtime.manifest().state).map(([name, def]) => ({
+  const manifest = runtime.manifest();
+  const out: Context[] = Object.entries(manifest.state).map(([name, def]) => ({
     description: `${name}: ${def.description}`,
     value: JSON.stringify(runtime.readState(name) ?? null),
   }));
+  const views = Object.entries(manifest.views);
+  if (views.length > 0) {
+    out.push({
+      description: VIEWS_CONTEXT_DESCRIPTION,
+      value: JSON.stringify(Object.fromEntries(views.map(([name, def]) => [name, def.description]))),
+    });
+  }
+  return out;
+}
+
+/** P2 trigger → user 메시지. content 의 gentizer_trigger 키로 일반 채팅과 구분 */
+export function toAgUiTriggerMessage(event: TriggerEvent): UserMessage {
+  return {
+    id: `gentizer-trigger-${crypto.randomUUID()}`,
+    role: "user",
+    content: JSON.stringify({ gentizer_trigger: { name: event.name, payload: event.payload } }),
+  };
+}
+
+export interface ConnectTriggersOptions extends RunWithFrontendToolsOptions {
+  onError?: (error: unknown, event: TriggerEvent) => void;
+}
+
+/** trigger 마다 메시지 추가 → runWithFrontendTools. 한 번에 하나씩 순서대로. 반환 함수로 해제 (대기 중 trigger 버림) */
+export function connectTriggers(agent: AbstractAgent, runtime: AgentRuntime, options: ConnectTriggersOptions = {}): () => void {
+  const { onError, ...runOptions } = options;
+  const queue: TriggerEvent[] = [];
+  let running = false;
+  let connected = true;
+
+  async function drain() {
+    if (running) return;
+    running = true;
+    try {
+      while (connected && queue.length > 0) {
+        const event = queue.shift()!;
+        try {
+          agent.addMessages([toAgUiTriggerMessage(event)]);
+          await runWithFrontendTools(agent, runtime, runOptions);
+        } catch (err) {
+          onError?.(err, event);
+        }
+      }
+    } finally {
+      running = false;
+    }
+  }
+
+  const off = runtime.onTrigger((event) => {
+    queue.push(event);
+    void drain();
+  });
+  return () => {
+    connected = false;
+    queue.length = 0;
+    off();
+  };
 }
 
 function parseArgs(raw: string): Record<string, unknown> | null {

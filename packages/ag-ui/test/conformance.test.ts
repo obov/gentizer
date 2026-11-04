@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Message } from "@ag-ui/client";
-import { toAgUiContext, toAgUiTools, runFrontendTools } from "../src/index.js";
+import { toAgUiContext, toAgUiTools, toAgUiTriggerMessage, runFrontendTools } from "../src/index.js";
 import {
   loadSuite,
   makeRuntime,
@@ -17,9 +17,11 @@ interface AgUiCase {
   name: string;
   actions: ActionDecl[];
   states?: StateDecl[];
+  views?: { name: string; def: { description: string } }[];
   confirm?: ConfirmMode;
-  op: "tools" | "context" | "runFrontendTools";
+  op: "tools" | "context" | "runFrontendTools" | "triggerMessage";
   messages?: Message[];
+  event?: { name: string; payload: Record<string, unknown> };
   expect: unknown[];
 }
 
@@ -28,7 +30,12 @@ describe("conformance ag-ui", () => {
     run(id)(id, async () => {
       const { runtime } = makeRuntime(c.confirm);
       registerDecls(runtime, c.actions, c.states);
-      if (c.op === "tools") {
+      for (const v of c.views ?? []) runtime.view(v.name, v.def);
+      if (c.op === "triggerMessage") {
+        const m = toAgUiTriggerMessage(c.event!);
+        expect(m.id.startsWith("gentizer-trigger-")).toBe(true);
+        expect([{ role: m.role, content: JSON.parse(m.content as string) }]).toEqual(c.expect);
+      } else if (c.op === "tools") {
         expect(toAgUiTools(runtime.manifest())).toEqual(c.expect);
       } else if (c.op === "context") {
         expect(toAgUiContext(runtime).map((x) => ({ ...x, value: JSON.parse(x.value) }))).toEqual(c.expect);

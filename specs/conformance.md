@@ -75,13 +75,15 @@ confirm "approve" | "deny" | "throw" | "absent"        runtime 생성 옵션. ab
 
 ```text
 { "actions", "states"?, "op": "tools", "expect": [Tool] }                        배열 순서 = 등록 순서
-{ "actions", "states"?, "op": "context", "expect": [Context] }                   value 는 파싱 후 비교
+{ "actions", "states"?, "views"?, "op": "context", "expect": [Context] }        value 는 파싱 후 비교
+{ "actions", "op": "triggerMessage", "event": { "name", "payload" }, "expect": [{ "role", "content": <JSON> }] }
 { "actions", "confirm"?, "op": "runFrontendTools", "messages": [Message], "expect": [{ "toolCallId", "content": <JSON>, "errorCode"? }] }
 ```
 
 - `errorCode` 있으면 tool 메시지 `error` 가 `"<code>: "` 로 시작, 없으면 `error` 없음
 - 실패 content 는 `{ "error": { "code" } }` 로 비교 (`error.message` 제외)
-- tool 메시지 `id` 는 `"gentizer-<toolCallId>"` (실행기가 고정 검사)
+- tool 메시지 `id` 는 `"gentizer-<toolCallId>"`, trigger 메시지 `id` 는 `"gentizer-trigger-"` 접두 (실행기가 고정 검사)
+- `views` 는 `{ "name", "def" }` 선언 목록, 등록 순서대로 등록
 
 ### a2ui
 

@@ -42,6 +42,12 @@
       "additionalProperties": false,
       "properties": { "name": { "$ref": "#/$defs/name" }, "def": { "type": "object" }, "value": true }
     },
+    "viewDecl": {
+      "type": "object",
+      "required": ["name", "def"],
+      "additionalProperties": false,
+      "properties": { "name": { "$ref": "#/$defs/name" }, "def": { "type": "object" } }
+    },
     "invokeExpect": {
       "oneOf": [
         { "type": "object", "required": ["ok", "value"], "additionalProperties": false, "properties": { "ok": { "const": true }, "value": true } },
@@ -197,9 +203,16 @@
         "name": { "$ref": "#/$defs/caseName" },
         "actions": { "type": "array", "items": { "$ref": "#/$defs/actionDecl" } },
         "states": { "type": "array", "items": { "$ref": "#/$defs/stateDecl" } },
+        "views": { "type": "array", "items": { "$ref": "#/$defs/viewDecl" } },
         "confirm": { "$ref": "#/$defs/confirm" },
-        "op": { "enum": ["tools", "context", "runFrontendTools"] },
+        "op": { "enum": ["tools", "context", "runFrontendTools", "triggerMessage"] },
         "messages": { "type": "array", "items": { "type": "object" } },
+        "event": {
+          "type": "object",
+          "required": ["name", "payload"],
+          "additionalProperties": false,
+          "properties": { "name": { "type": "string" }, "payload": { "type": "object" } }
+        },
         "expect": { "type": "array" }
       },
       "if": { "properties": { "op": { "const": "runFrontendTools" } } },
