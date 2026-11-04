@@ -42,7 +42,7 @@ views     이름 → { description }
 - 승인 전 실행 차단은 런타임 (아래 '런타임'), 승인 카드 표시는 바인딩 책임
 - confirm 액션이 없으면 `metadata` 생략
 
-state · views 는 catalog 에 들어가지 않는다. 미구현: DataModel 동기화 (state) · 화면 맥락 확장 (views).
+state · views 는 catalog 에 들어가지 않는다. 상태 → DataModel 동기화는 `specs/a2ui.md`, 화면 맥락 (views) 전달은 `specs/ag-ui.md` · `specs/a2ui.md`.
 
 ## 런타임
 
@@ -56,7 +56,16 @@ manifest()               현재 등록된 표시의 Manifest (등록 순서)
 readState(name)          read() 결과. 미등록이면 undefined
 subscribe(listener)      등록 · 해제마다 호출. 구독 해제 함수 반환
 invoke(name, args?)      → { ok: true, value } | { ok: false, error: { code, message } }. reject 없음
+trigger(name, payload?)  P2 이벤트형: 앱 이벤트를 에이전트에 알림. 수신기마다 { name, payload } 전달
+onTrigger(listener)      trigger 수신기 등록. 해제 함수 반환. 전송 어댑터 (ag-ui · a2ui) 가 등록
 ```
+
+trigger 규칙:
+
+- `name` 은 manifest 이름 규칙, `payload` 생략 시 `{}`. 이름 위반 · payload 가 object 아님 → `InvalidTriggerError` (throw, 수신기 미호출)
+- 수신기 호출은 등록 순서, 동기. 수신기 없으면 아무 일 없음. 한 수신기의 throw 는 다른 수신기 호출을 막지 않는다
+- payload 는 수신기마다 복사본 (수신기가 바꿔도 다른 수신기에 영향 없음)
+- trigger 는 manifest 에 넣지 않는다: 앱 → 에이전트 알림이라 에이전트 권한 경계 (D2) 대상이 아님
 
 invoke 순서와 오류 코드:
 
