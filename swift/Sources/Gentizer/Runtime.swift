@@ -27,6 +27,12 @@ public struct ConfirmRequest: Equatable, Sendable {
     public let name: String
     public let description: String
     public let args: [String: JSONValue]
+
+    public init(name: String, description: String, args: [String: JSONValue]) {
+        self.name = name
+        self.description = description
+        self.args = args
+    }
 }
 
 /// P2 이벤트형: 앱 → 에이전트 알림
