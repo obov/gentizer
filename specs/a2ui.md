@@ -20,3 +20,18 @@ createA2uiBridge(runtime, { catalogId })
 - 성공 `value` 는 `invoke` 의 value
 
 미구현: `callAgentFunction` (P2 이벤트형) · DataModel 동기화 · 전송 (L1).
+
+## Swift 의존성
+
+A2UI Swift (`A2UISwiftUI` · `A2UISwiftCore`) 는 fork `https://github.com/obov/a2ui` 의 순수 semver 태그로 의존한다.
+
+```text
+이유      upstream a2ui-project/a2ui 태그는 접두 형식 (python/a2ui-core/v0.5.0) 이라 SwiftPM 버전으로 못 씀.
+          branch 의존은 버전으로 설치되는 gentizer-swift 에 넣을 수 없음 (SwiftPM 규칙)
+태그      0.1.0 = upstream main 43696ef (2026-11-04). upstream 갱신 시 fork 동기화 후 다음 버전 태그
+변경      fork 에 코드 수정 없음 (태그만). Apache-2.0 LICENSE 유지
+플랫폼    A2UI Swift 하한 iOS 17 · macOS 14 (gentizer Swift core 는 iOS 16 · macOS 13)
+```
+
+- 미결: Swift A2UI 브리지 위치. A2UI 플랫폼 하한이 더 높아 같은 패키지 target 이면 Gentizer 전체 하한이 iOS 17 로 오름 → 별도 패키지 · 하한 상향 중 선택
+- upstream 이 SwiftPM 용 semver 태그를 붙이면 fork 대신 upstream 으로 전환
