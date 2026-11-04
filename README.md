@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (conformance 전체 suite 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트) · A2UI RPC 브리지 · A2UI surface 렌더링 (basic catalog, iOS 17 · macOS 14). 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: TS — L2 core (trigger 포함) · HTML data-agent-* 속성 (`@gentizer/dom`) · React hooks · A2UI RPC 브리지 · 웹 surface host · React surface 렌더링 (`@gentizer/react-a2ui`, SSR 안전) · AG-UI 어댑터 (trigger · views context) · conformance 케이스. Swift — core (conformance 전체 suite 통과) · SwiftUI 수정자 · 승인 UI · AG-UI 연결 (STATE_DELTA · reasoning · activity · 취소) · A2UI RPC 브리지 · surface 렌더링 · 앱 컴포넌트 catalog (iOS 17 · macOS 14) · 예시 앱. L4 skill (`skills/gentizer`). 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
