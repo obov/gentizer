@@ -21,6 +21,21 @@ swift/Tests/GentizerConformanceTests/  conformance 실행기
 - 라이브러리 product `Gentizer` 하나. SwiftUI 바인딩 · AG-UI 어댑터는 별도 target (이후 plan)
 - 빌드 산출물 `swift/.build/` 은 git 무시
 
+## 예시 앱
+
+`examples/swift/` — macOS SwiftUI 실행 파일 (SwiftPM, `swift/` 를 path 의존). 웹 예시와 같은 미니 상점 + mock 에이전트 (`examples/mock`).
+
+```text
+실행        npm start -w @gentizer/example-mock (mock 두 개) · swift run --package-path examples/swift
+표시        .agentAction (filter_set · cart_add · cart_clear confirm) · .agentState (cart · filter) · .agentView
+승인        AgentConfirmation + .agentConfirmation
+AG-UI       AGUIHTTPAgent (:8782) + runWithFrontendTools, 저장 버튼 trigger → connectTriggers
+A2UI        A2UISurfaceHost (:8781 SSE) + 앱 컴포넌트 ProductCard, A2UISurfaceView 로 에이전트 surface 표시
+```
+
+- mock A2UI 에이전트는 "추천" 입력에 ProductCard surface 를 보낸다. mock AG-UI 에이전트는 trigger 메시지에 "앱 이벤트 수신: <name>" 으로 답한다
+- 예시는 배포 저장소에 포함하지 않는다 (export path 밖)
+
 ## 배포
 
 gnam.json `export.targets.swift`:
