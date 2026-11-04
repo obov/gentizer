@@ -44,14 +44,26 @@ gnam.json `export.targets.swift`:
 ```text
 path      swift
 repo      https://github.com/obov/gentizer-swift.git
-include   conformance → Tests/Conformance
+include   conformance → Tests/Conformance · LICENSE → LICENSE
 tag       {version}   (v 없는 MAJOR.MINOR.PATCH, SwiftPM 규칙)
 version   swift/VERSION
 ```
 
 - 배포 저장소에 직접 커밋 금지. 이슈 · PR 은 이 저장소로
 - 버전 변경은 `release: export:swift <version>` 커밋에서만 (gnam release 연동)
-- 미구현: 배포 저장소 생성 · CI push (첫 배포 시점)
+- `swift/README.md` = 배포 저장소 README (설치 · product · 최소 사용 예)
+- 배포 저장소는 단독으로 `swift test` 가 통과해야 한다 (include 한 conformance 케이스 사용)
+
+CI (`.github/workflows/ci.yml`):
+
+```text
+check     push · PR. ubuntu, npm ci → npm run build → npm run check → npx gnam verify
+swift     push · PR. macos, swift test --package-path swift · swift build --package-path examples/swift/ShopExample
+export    main push, check · swift 통과 후. checkout fetch-depth 0 → export build swift → export push swift
+          자격 = secret GENTIZER_SWIFT_TOKEN (gentizer-swift 쓰기 권한 토큰), git url insteadOf 로 주입
+```
+
+- 미구현: GitHub 저장소 (이 저장소 원격 · gentizer-swift) 생성 · 첫 push · secret 등록
 
 ## conformance 실행기
 
