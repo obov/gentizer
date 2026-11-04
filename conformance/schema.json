@@ -151,6 +151,31 @@
           "required": ["op", "name", "expect"],
           "additionalProperties": false,
           "properties": { "op": { "const": "readState" }, "name": { "type": "string" }, "expect": true }
+        },
+        {
+          "required": ["op", "listener"],
+          "additionalProperties": false,
+          "properties": { "op": { "const": "listen" }, "listener": { "type": "string" }, "throws": { "const": true }, "handle": { "type": "string" } }
+        },
+        {
+          "required": ["op", "name"],
+          "additionalProperties": false,
+          "oneOf": [{ "required": ["expectEvents"] }, { "required": ["expectError"] }],
+          "properties": {
+            "op": { "const": "trigger" },
+            "name": true,
+            "payload": true,
+            "expectEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["listener", "name", "payload"],
+                "additionalProperties": false,
+                "properties": { "listener": { "type": "string" }, "name": { "type": "string" }, "payload": { "type": "object" } }
+              }
+            },
+            "expectError": { "const": "INVALID_TRIGGER" }
+          }
         }
       ]
     },

@@ -1,0 +1,198 @@
+{
+  "suite": "runtime",
+  "description": "trigger · onTrigger (specs/core.md '런타임' trigger 규칙)",
+  "cases": [
+    {
+      "name": "수신기 없음",
+      "steps": [
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": {
+            "id": 1
+          },
+          "expectEvents": []
+        }
+      ]
+    },
+    {
+      "name": "등록 순서로 전달",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a"
+        },
+        {
+          "op": "listen",
+          "listener": "b"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": {
+            "id": 1
+          },
+          "expectEvents": [
+            {
+              "listener": "a",
+              "name": "form_saved",
+              "payload": {
+                "id": 1
+              }
+            },
+            {
+              "listener": "b",
+              "name": "form_saved",
+              "payload": {
+                "id": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "payload 생략은 빈 object",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a"
+        },
+        {
+          "op": "trigger",
+          "name": "page_opened",
+          "expectEvents": [
+            {
+              "listener": "a",
+              "name": "page_opened",
+              "payload": {}
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "이름 규칙 위반",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a"
+        },
+        {
+          "op": "trigger",
+          "name": "Form.saved",
+          "expectError": "INVALID_TRIGGER"
+        },
+        {
+          "op": "trigger",
+          "name": "",
+          "expectError": "INVALID_TRIGGER"
+        },
+        {
+          "op": "trigger",
+          "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "expectError": "INVALID_TRIGGER"
+        }
+      ]
+    },
+    {
+      "name": "payload 가 object 아님",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": [
+            1
+          ],
+          "expectError": "INVALID_TRIGGER"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": "x",
+          "expectError": "INVALID_TRIGGER"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": null,
+          "expectError": "INVALID_TRIGGER"
+        }
+      ]
+    },
+    {
+      "name": "수신기 throw 는 다른 수신기를 막지 않음",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a",
+          "throws": true
+        },
+        {
+          "op": "listen",
+          "listener": "b"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "payload": {
+            "id": 2
+          },
+          "expectEvents": [
+            {
+              "listener": "a",
+              "name": "form_saved",
+              "payload": {
+                "id": 2
+              }
+            },
+            {
+              "listener": "b",
+              "name": "form_saved",
+              "payload": {
+                "id": 2
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "수신기 해제",
+      "steps": [
+        {
+          "op": "listen",
+          "listener": "a",
+          "handle": "ha"
+        },
+        {
+          "op": "listen",
+          "listener": "b"
+        },
+        {
+          "op": "unregister",
+          "handle": "ha"
+        },
+        {
+          "op": "unregister",
+          "handle": "ha"
+        },
+        {
+          "op": "trigger",
+          "name": "form_saved",
+          "expectEvents": [
+            {
+              "listener": "b",
+              "name": "form_saved",
+              "payload": {}
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

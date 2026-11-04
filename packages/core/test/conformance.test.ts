@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   DuplicateNameError,
   InvalidManifestError,
+  InvalidTriggerError,
   toA2uiCatalog,
   validateManifest,
   type ActionDef,
@@ -66,7 +67,9 @@ type Step =
   | { op: "unregister"; handle: string }
   | { op: "invoke"; name: string; args?: unknown; expect: { ok: true; value: unknown } | { ok: false; code: string }; expectConfirm?: unknown }
   | { op: "manifest"; expect: Manifest; expectOrder?: Partial<Record<"actions" | "state" | "views", string[]>> }
-  | { op: "readState"; name: string; expect: unknown };
+  | { op: "readState"; name: string; expect: unknown }
+  | { op: "listen"; listener: string; throws?: true; handle?: string }
+  | { op: "trigger"; name: string; payload?: unknown; expectEvents?: { listener: string; name: string; payload: unknown }[]; expectError?: "INVALID_TRIGGER" };
 
 interface RuntimeCase {
   name: string;
@@ -79,6 +82,7 @@ describe("conformance runtime", () => {
     run(id)(id, async () => {
       const { runtime: rt, calls } = makeRuntime(c.confirm);
       const handles = new Map<string, () => void>();
+      const events: { listener: string; name: string; payload: unknown }[] = [];
       for (const [i, step] of c.steps.entries()) {
         const at = `step ${i} ${step.op}`;
         switch (step.op) {
@@ -121,6 +125,27 @@ describe("conformance runtime", () => {
           case "readState":
             expect(rt.readState(step.name) ?? null, at).toEqual(step.expect);
             break;
+          case "listen": {
+            const { listener, throws } = step;
+            const off = rt.onTrigger((e) => {
+              events.push({ listener, ...e });
+              if (throws) throw new Error("수신기 실패");
+            });
+            if (step.handle) handles.set(step.handle, off);
+            break;
+          }
+          case "trigger": {
+            events.length = 0;
+            const fire = () => ("payload" in step ? rt.trigger(step.name, step.payload) : rt.trigger(step.name));
+            if (step.expectError) {
+              expect(fire, at).toThrow(InvalidTriggerError);
+              expect(events, at).toEqual([]);
+            } else {
+              fire();
+              expect(events, at).toEqual(step.expectEvents);
+            }
+            break;
+          }
         }
       }
     });

@@ -1,5 +1,5 @@
 import { DuplicateNameError } from "./builder.js";
-import { MANIFEST_VERSION, type ActionDef, type Manifest, type StateDef, type ViewDef } from "./manifest.js";
+import { MANIFEST_VERSION, NAME_MAX_LENGTH, NAME_PATTERN, type ActionDef, type Manifest, type StateDef, type ViewDef } from "./manifest.js";
 
 export type InvokeErrorCode = "NOT_FOUND" | "INVALID_ARGS" | "DENIED" | "EXECUTION_ERROR";
 
@@ -20,6 +20,21 @@ export interface AgentRuntimeOptions {
 
 export type ActionRun = (args: Record<string, unknown>) => unknown;
 
+/** P2 이벤트형: 앱 → 에이전트 알림 */
+export interface TriggerEvent {
+  name: string;
+  payload: Record<string, unknown>;
+}
+export type TriggerListener = (event: TriggerEvent) => void;
+
+export class InvalidTriggerError extends Error {
+  readonly code = "INVALID_TRIGGER";
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidTriggerError";
+  }
+}
+
 interface Entry<D, X = undefined> {
   def: D;
   extra: X;
@@ -34,6 +49,9 @@ export interface AgentRuntime {
   readState(name: string): unknown;
   subscribe(listener: () => void): () => void;
   invoke(name: string, args?: unknown): Promise<InvokeResult>;
+  /** 이름 위반 · payload 가 object 아님은 InvalidTriggerError */
+  trigger(name: string, payload?: unknown): void;
+  onTrigger(listener: TriggerListener): () => void;
 }
 
 /** 표시와 실행 함수를 함께 보관하는 레지스트리. 바인딩이 마운트 · 언마운트에 맞춰 등록 · 해제 */
@@ -42,6 +60,8 @@ export function createAgentRuntime(options: AgentRuntimeOptions = {}): AgentRunt
   const states = new Map<string, Entry<StateDef, () => unknown>>();
   const views = new Map<string, Entry<ViewDef>>();
   const listeners = new Set<() => void>();
+  // 같은 함수를 두 번 등록해도 각각 호출 · 각각 해제
+  const triggerListeners = new Map<symbol, TriggerListener>();
   const notify = () => {
     for (const l of [...listeners]) l();
   };
@@ -72,6 +92,24 @@ export function createAgentRuntime(options: AgentRuntimeOptions = {}): AgentRunt
     subscribe(listener) {
       listeners.add(listener);
       return () => void listeners.delete(listener);
+    },
+    trigger(name, payload = {}) {
+      if (typeof name !== "string" || !NAME_PATTERN.test(name) || name.length > NAME_MAX_LENGTH)
+        throw new InvalidTriggerError(`trigger 이름 규칙 위반: ${String(name)}`);
+      if (typeof payload !== "object" || payload === null || Array.isArray(payload))
+        throw new InvalidTriggerError("trigger payload 는 object");
+      for (const l of [...triggerListeners.values()]) {
+        try {
+          l({ name, payload: structuredClone(payload as Record<string, unknown>) });
+        } catch {
+          // 한 수신기 실패가 다른 수신기를 막지 않는다
+        }
+      }
+    },
+    onTrigger(listener) {
+      const key = Symbol("trigger");
+      triggerListeners.set(key, listener);
+      return () => void triggerListeners.delete(key);
     },
     async invoke(name, rawArgs = {}) {
       const entry = actions.get(name);

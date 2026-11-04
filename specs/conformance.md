@@ -60,7 +60,12 @@ confirm "approve" | "deny" | "throw" | "absent"        runtime 생성 옵션. ab
 { "op": "invoke", "name", "args"?, "expect": { "ok": true, "value" } | { "ok": false, "code" }, "expectConfirm"?: { "name", "description", "args" } | null }
 { "op": "manifest", "expect": Manifest, "expectOrder"?: { "actions"?: [..], "state"?: [..], "views"?: [..] } }
 { "op": "readState", "name", "expect": <JSON> | null }
+{ "op": "listen", "listener": "<id>", "throws"?: true, "handle"?: "<id>" }   trigger 수신기 등록. 받은 이벤트를 기록 (throws = 기록 후 throw)
+{ "op": "trigger", "name", "payload"?, "expectEvents": [{ "listener", "name", "payload" }] | "expectError": "INVALID_TRIGGER" }
 ```
+
+- `expectEvents` = 이 step 에서 수신기들이 받은 이벤트 (호출 순서). `expectError` 면 이벤트 없음
+- `unregister` 는 listen 의 handle 도 해제
 
 - `args` 생략 = 인자 없이 호출. `"args": <JSON>` 은 그 값 그대로 (배열 · 문자열 포함)
 - `expectConfirm: null` = confirm 콜백 미호출
