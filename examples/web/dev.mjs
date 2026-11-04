@@ -1,11 +1,8 @@
-// mock agent 2개 + vite 를 함께 실행. Ctrl+C 로 모두 종료
+// mock 에이전트 2개 (examples/mock) + vite 를 함께 실행. Ctrl+C 로 모두 종료
 import { spawn } from "node:child_process";
+import { startMocks } from "../mock/start.mjs";
 
-const procs = [
-  ["node", ["mock/agent-server.mjs"]],
-  ["node", ["mock/a2ui-server.mjs"]],
-  ["npx", ["vite"]],
-].map(([cmd, args]) => spawn(cmd, args, { stdio: "inherit" }));
+const procs = [...startMocks(), spawn("npx", ["vite"], { stdio: "inherit" })];
 
 const stop = () => {
   for (const p of procs) p.kill();

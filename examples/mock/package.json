@@ -1,0 +1,10 @@
+{
+  "name": "@gentizer/example-mock",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "agent": "node agent-server.mjs",
+    "a2ui": "node a2ui-server.mjs",
+    "start": "node start.mjs"
+  }
+}

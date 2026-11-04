@@ -4,9 +4,7 @@
   "type": "module",
   "scripts": {
     "predev": "npm run build --prefix ../..",
-    "dev": "node dev.mjs",
-    "agent": "node mock/agent-server.mjs",
-    "a2ui": "node mock/a2ui-server.mjs"
+    "dev": "node dev.mjs"
   },
   "dependencies": {
     "@gentizer/core": "0.0.0",
