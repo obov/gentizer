@@ -52,7 +52,7 @@ public final class AgentRegistration {
             }
             key = next
         } catch {
-            logger.fault("gentizer 등록 무시: \(error.description, privacy: .public)")
+            logger.fault("gentizer 등록 무시: \(String(describing: error), privacy: .public)")
         }
     }
 

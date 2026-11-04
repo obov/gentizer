@@ -92,7 +92,7 @@ public final class AgentRuntime {
 
     /// 해제 함수는 자기 등록만 지운다: 이미 해제됐거나 같은 이름이 재등록된 경우 무시
     @discardableResult
-    public func action(_ name: String, _ def: ActionDef, run: @escaping ActionRun) throws(DuplicateNameError) -> @MainActor () -> Void {
+    public func action(_ name: String, _ def: ActionDef, run: @escaping ActionRun) throws -> @MainActor () -> Void {
         guard manifestStore.actions.append(name, def) else { throw DuplicateNameError(section: "actions", name: name) }
         let t = token()
         runs[name] = Slot(token: t, extra: run)
@@ -106,7 +106,7 @@ public final class AgentRuntime {
     }
 
     @discardableResult
-    public func state(_ name: String, _ def: StateDef, read: @escaping @MainActor () -> JSONValue?) throws(DuplicateNameError) -> @MainActor () -> Void {
+    public func state(_ name: String, _ def: StateDef, read: @escaping @MainActor () -> JSONValue?) throws -> @MainActor () -> Void {
         guard manifestStore.state.append(name, def) else { throw DuplicateNameError(section: "state", name: name) }
         let t = token()
         reads[name] = Slot(token: t, extra: read)
@@ -120,7 +120,7 @@ public final class AgentRuntime {
     }
 
     @discardableResult
-    public func view(_ name: String, _ def: ViewDef) throws(DuplicateNameError) -> @MainActor () -> Void {
+    public func view(_ name: String, _ def: ViewDef) throws -> @MainActor () -> Void {
         guard manifestStore.views.append(name, def) else { throw DuplicateNameError(section: "views", name: name) }
         let t = token()
         viewTokens[name] = Slot(token: t, extra: ())
