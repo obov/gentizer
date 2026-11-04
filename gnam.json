@@ -4,6 +4,20 @@
     "@gnam/lore",
     "@gnam/release",
     "@gnam/recall",
-    "@gnam/layout"
-  ]
+    "@gnam/layout",
+    "@gnam/export"
+  ],
+  "export": {
+    "targets": {
+      "swift": {
+        "path": "swift",
+        "repo": "https://github.com/obov/gentizer-swift.git",
+        "include": {
+          "conformance": "Tests/Conformance"
+        },
+        "tag": "{version}",
+        "version": "swift/VERSION"
+      }
+    }
+  }
 }
