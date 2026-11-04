@@ -153,6 +153,20 @@
       ]
     },
     {
+      "name": "skills",
+      "children": [
+        {
+          "name": "{kebab-case}",
+          "enforceExistence": ["SKILL.md"],
+          "children": [
+            { "name": "SKILL.md" },
+            { "name": "check.mjs" },
+            { "name": "references", "children": [{ "name": "{kebab-case}.md" }] }
+          ]
+        }
+      ]
+    },
+    {
       "name": "dart",
       "children": []
     },
