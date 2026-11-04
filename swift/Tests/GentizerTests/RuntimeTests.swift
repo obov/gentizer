@@ -21,9 +21,10 @@ struct RuntimeTests {
 
     @Test func readStateIsReadAtCallTime() throws {
         let rt = AgentRuntime()
-        var n = 1
-        try rt.state("count", StateDef(description: "개수")) { .number(Double(n)) }
-        n = 2
+        final class Box { var n = 1 }
+        let box = Box()
+        try rt.state("count", StateDef(description: "개수")) { .number(Double(box.n)) }
+        box.n = 2
         #expect(rt.readState("count") == 2)
     }
 

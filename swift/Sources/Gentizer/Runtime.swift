@@ -14,6 +14,11 @@ public enum InvokeErrorCode: String, Sendable, Equatable {
 public struct InvokeError: Error, Equatable, Sendable {
     public let code: InvokeErrorCode
     public let message: String
+
+    public init(code: InvokeErrorCode, message: String) {
+        self.code = code
+        self.message = message
+    }
 }
 
 public typealias InvokeResult = Result<JSONValue, InvokeError>

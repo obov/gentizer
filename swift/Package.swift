@@ -8,12 +8,15 @@ let package = Package(
     products: [
         .library(name: "Gentizer", targets: ["Gentizer"]),
         .library(name: "GentizerSwiftUI", targets: ["GentizerSwiftUI"]),
+        .library(name: "GentizerAGUI", targets: ["GentizerAGUI"]),
     ],
     targets: [
         .target(name: "Gentizer"),
         .target(name: "GentizerSwiftUI", dependencies: ["Gentizer"]),
+        .target(name: "GentizerAGUI", dependencies: ["Gentizer"]),
         .testTarget(name: "GentizerTests", dependencies: ["Gentizer"]),
-        .testTarget(name: "GentizerConformanceTests", dependencies: ["Gentizer"]),
+        .testTarget(name: "GentizerConformanceTests", dependencies: ["Gentizer", "GentizerAGUI"]),
+        .testTarget(name: "GentizerAGUITests", dependencies: ["GentizerAGUI"]),
         .testTarget(name: "GentizerSwiftUITests", dependencies: ["GentizerSwiftUI"]),
     ]
 )
