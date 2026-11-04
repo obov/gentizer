@@ -16,11 +16,11 @@ views     이름 → { description }
 - `input` 생략 시 인자 없는 object (`{ type: "object", properties: {} }`)
 - `input` 최상위 `type` 은 `"object"` 만 허용
 - `returns` 생략 시 `"void"`. 허용값: `string` · `number` · `boolean` · `array` · `object` · `any` · `void`
-- 같은 이름 중복 등록은 오류 (액션 · 상태 · 화면 각각 안에서)
+- 같은 이름 중복 등록은 오류 (액션 · 상태 · 화면 각각 안에서). `createManifestBuilder()` 가 등록 시점에 `DuplicateNameError`
 
 ## 검증
 
-미구현: `validateManifest(m)` → `{ ok: true } | { ok: false, errors: [{ path, message }] }`.
+`validateManifest(m)` → `{ ok: true } | { ok: false, errors: [{ path, message }] }`.
 위 규칙 위반을 모두 수집하고, 첫 오류에서 멈추지 않는다.
 
 ## A2UI v1.0 변환
