@@ -29,6 +29,26 @@ public struct ConfirmRequest: Equatable, Sendable {
     public let args: [String: JSONValue]
 }
 
+/// P2 이벤트형: 앱 → 에이전트 알림
+public struct TriggerEvent: Equatable, Sendable {
+    public let name: String
+    public let payload: [String: JSONValue]
+
+    public init(name: String, payload: [String: JSONValue]) {
+        self.name = name
+        self.payload = payload
+    }
+}
+
+public struct InvalidTriggerError: Error, Equatable, CustomStringConvertible {
+    public let code = "INVALID_TRIGGER"
+    public let message: String
+    public var description: String { message }
+}
+
+/// trigger 수신기. throw 해도 다른 수신기 호출은 계속
+public typealias TriggerListener = @MainActor (TriggerEvent) throws -> Void
+
 /// 액션 실행 함수. 반환값이 invoke 결과 value
 public typealias ActionRun = @MainActor ([String: JSONValue]) async throws -> JSONValue
 /// confirm: true 액션 실행 전 호출. false · throw = DENIED
@@ -47,6 +67,7 @@ public final class AgentRuntime {
     private var reads: [String: Slot<@MainActor () -> JSONValue?>] = [:]
     private var viewTokens: [String: Slot<Void>] = [:]
     private var listeners: [Int: @MainActor () -> Void] = [:]
+    private var triggerListeners: [Int: TriggerListener] = [:]
     private var nextToken = 0
     private let confirm: ConfirmHandler?
 
@@ -117,6 +138,23 @@ public final class AgentRuntime {
         let t = token()
         listeners[t] = listener
         return { [weak self] in self?.listeners[t] = nil }
+    }
+
+    /// 수신기마다 { name, payload } 를 등록 순서로 전달. 이름 위반 · payload 가 object 아님 = InvalidTriggerError
+    public func trigger(_ name: String, payload: JSONValue = .object([:])) throws(InvalidTriggerError) {
+        guard isValidName(name) else { throw InvalidTriggerError(message: "trigger 이름 규칙 위반: \(name)") }
+        guard case .object(let fields) = payload else { throw InvalidTriggerError(message: "trigger payload 는 object") }
+        let event = TriggerEvent(name: name, payload: fields)
+        for key in triggerListeners.keys.sorted() {
+            try? triggerListeners[key]?(event)
+        }
+    }
+
+    /// trigger 수신기 등록. 반환 함수로 해제
+    public func onTrigger(_ listener: @escaping TriggerListener) -> @MainActor () -> Void {
+        let t = token()
+        triggerListeners[t] = listener
+        return { [weak self] in self?.triggerListeners[t] = nil }
     }
 
     /// 검사 순서 NOT_FOUND → INVALID_ARGS → DENIED → EXECUTION_ERROR

@@ -90,6 +90,7 @@ struct RuntimeConformance {
         let recorder = ConfirmRecorder()
         let rt = recorder.makeRuntime(c.value["confirm"]?.stringValue)
         var handles: [String: @MainActor () -> Void] = [:]
+        var events: [JSONValue] = []
         for (i, step) in (c.value["steps"]?.arrayValue ?? []).enumerated() {
             let op = step["op"]?.stringValue ?? ""
             let at = Comment(rawValue: "\(c.id) step \(i) \(op)")
@@ -132,12 +133,34 @@ struct RuntimeConformance {
                 }
             case "readState":
                 #expect((rt.readState(name) ?? .null) == step["expect"], at)
+            case "listen":
+                let listener = step["listener"]?.stringValue ?? ""
+                let throwing = step["throws"] == true
+                let off = rt.onTrigger { e in
+                    events.append(["listener": .string(listener), "name": .string(e.name), "payload": .object(e.payload)])
+                    if throwing { throw ListenerFailure() }
+                }
+                if let h = step["handle"]?.stringValue { handles[h] = off }
+            case "trigger":
+                events = []
+                let fire = { () throws(InvalidTriggerError) in
+                    if let payload = step["payload"] { try rt.trigger(name, payload: payload) } else { try rt.trigger(name) }
+                }
+                if step["expectError"] == "INVALID_TRIGGER" {
+                    #expect(throws: InvalidTriggerError.self, at) { try fire() }
+                    #expect(events.isEmpty, at)
+                } else {
+                    try fire()
+                    #expect(.array(events) == step["expectEvents"], at)
+                }
             default:
                 Issue.record(Comment(rawValue: "알 수 없는 op \(op)"))
             }
         }
     }
 }
+
+private struct ListenerFailure: Error {}
 
 @Suite("conformance ag-ui")
 @MainActor
