@@ -21,7 +21,8 @@
     "check": "npm run typecheck && npm run test"
   },
   "dependencies": {
-    "@gentizer/core": "0.0.0"
+    "@gentizer/core": "0.0.0",
+    "@gentizer/dom": "0.0.0"
   },
   "peerDependencies": {
     "react": ">=18"

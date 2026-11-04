@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "jsx": "react-jsx", "paths": { "@gentizer/core": ["../core/src/index.ts"] } },
+  "compilerOptions": { "jsx": "react-jsx", "paths": { "@gentizer/core": ["../core/src/index.ts"], "@gentizer/dom": ["../dom/src/index.ts"] } },
   "include": ["src", "test", "vitest.config.ts"]
 }

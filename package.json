@@ -13,5 +13,8 @@
   "workspaces": [
     "packages/*",
     "examples/*"
-  ]
+  ],
+  "overrides": {
+    "@a2ui/web_core": "0.15.0"
+  }
 }

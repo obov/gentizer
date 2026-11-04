@@ -7,8 +7,10 @@ import {
   useRef,
   useSyncExternalStore,
   type ReactNode,
+  type RefObject,
 } from "react";
 import type { ActionDef, ActionRun, AgentRuntime, Manifest, StateDef, ViewDef } from "@gentizer/core";
+import { bindAgentAttributes, type BindAgentAttributesOptions } from "@gentizer/dom";
 
 const RuntimeContext = createContext<AgentRuntime | null>(null);
 
@@ -71,4 +73,19 @@ export function useAgentManifest(): Manifest {
   const rt = useAgentRuntime();
   const getSnapshot = () => manifestStore(rt).manifest;
   return useSyncExternalStore(rt.subscribe, getSnapshot, getSnapshot);
+}
+
+/** 마운트 동안 data-agent-* 속성 바인딩. rootRef 생략 = document.body */
+export function useAgentAttributes(rootRef?: RefObject<Element | null>, options?: BindAgentAttributesOptions): void {
+  const rt = useAgentRuntime();
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+  const root = rootRef?.current;
+  useEffect(() => {
+    const target = rootRef ? rootRef.current : document.body;
+    if (!target) return;
+    return bindAgentAttributes(rt, target, { onError: (e, el) => (optionsRef.current?.onError ?? console.warn)(e, el) });
+    // rootRef.current 가 바뀐 렌더에서 다시 바인딩
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rt, rootRef, root]);
 }

@@ -1,4 +1,4 @@
-import { StrictMode, useState } from "react";
+import { StrictMode, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
 import { act, render, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
@@ -7,6 +7,7 @@ import { createAgentRuntime, type AgentRuntime } from "@gentizer/core";
 import {
   GentizerProvider,
   useAgentAction,
+  useAgentAttributes,
   useAgentManifest,
   useAgentRuntime,
   useAgentState,
@@ -127,5 +128,42 @@ describe("useAgentManifest", () => {
     const before = result.current;
     rerender();
     expect(result.current).toBe(before);
+  });
+});
+
+describe("useAgentAttributes", () => {
+  test("마운트 동안 document.body 의 속성 바인딩, 언마운트 해제", async () => {
+    const rt = createAgentRuntime();
+    function App() {
+      useAgentAttributes();
+      return <button data-agent-action="buy" data-agent-desc="구매" onClick={() => clicks++} />;
+    }
+    let clicks = 0;
+    const r = render(<App />, { wrapper: wrap(rt) });
+    expect(Object.keys(rt.manifest().actions)).toEqual(["buy"]);
+    await act(async () => {
+      await rt.invoke("buy");
+    });
+    expect(clicks).toBe(1);
+    r.unmount();
+    expect(rt.manifest().actions).toEqual({});
+  });
+
+  test("rootRef 범위만", () => {
+    const rt = createAgentRuntime();
+    function App() {
+      const ref = useRef<HTMLDivElement>(null);
+      useAgentAttributes(ref);
+      return (
+        <>
+          <div ref={ref}>
+            <button data-agent-action="inside" data-agent-desc="안" />
+          </div>
+          <button data-agent-action="outside" data-agent-desc="밖" />
+        </>
+      );
+    }
+    render(<App />, { wrapper: wrap(rt) });
+    expect(Object.keys(rt.manifest().actions)).toEqual(["inside"]);
   });
 });
