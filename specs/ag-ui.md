@@ -48,4 +48,5 @@ runFrontendTools(runtime, messages) async             TS 와 같은 규칙 (대�
 
 - 문자열 JSON (`content` · context `value`) 은 키 정렬 직렬화
 - conformance `ag-ui` suite 를 Swift 실행기에서도 통과
-- 미구현: `runWithFrontendTools` (에이전트 연결). AG-UI Swift 클라이언트 선택 (README Q3) 후
+- 미구현: `runWithFrontendTools` (에이전트 연결)
+- 미결: Swift AG-UI 클라이언트. 공식 커뮤니티 SDK (`ag-ui` 저장소 `sdks/community/swift`) 는 저장소 루트가 아니라 SwiftPM URL 설치 불가 → 자체 최소 SSE 클라이언트 · 다른 SDK 중 선택
