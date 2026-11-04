@@ -66,4 +66,4 @@ confirm            init(confirm:) 콜백 async throws -> Bool. 없음 · false �
 ```
 
 - `AgentRuntime` 이 `@MainActor` 인 이유: 액션 실행 함수 대부분이 SwiftUI 상태를 바꾼다
-- 미구현: 전체 (core 이식 plan)
+- 정적 manifest builder (TS `createManifestBuilder`) 대응 없음. Swift 는 런타임 등록만
