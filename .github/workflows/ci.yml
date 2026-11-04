@@ -1,0 +1,54 @@
+# specs/swift.md 'CI'. check · swift 는 push · PR, export 는 main push 에서 두 job 통과 후
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check
+      - run: npx gnam verify
+
+  swift:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            swift/.build
+            examples/swift/ShopExample/.build
+          key: swift-${{ runner.os }}-${{ hashFiles('swift/Package.swift') }}
+      - run: swift --version
+      - run: swift test --package-path swift
+      - run: swift build --package-path examples/swift/ShopExample
+
+  export:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, swift]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }  # 배포 저장소의 원본 커밋을 찾는다
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: 배포 저장소 자격 (gentizer-swift 쓰기 토큰)
+        env:
+          GENTIZER_SWIFT_TOKEN: ${{ secrets.GENTIZER_SWIFT_TOKEN }}
+        run: |
+          git config --global user.name "gentizer-export"
+          git config --global user.email "gentizer-export@users.noreply.github.com"
+          git config --global url."https://x-access-token:${GENTIZER_SWIFT_TOKEN}@github.com/obov/gentizer-swift".insteadOf "https://github.com/obov/gentizer-swift"
+      - run: npx gnam run export build swift
+      - run: npx gnam run export push swift
