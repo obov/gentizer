@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 구현. HTML 속성 · Swift · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현. HTML 속성 · Swift · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -76,6 +76,7 @@ saveBtn.addEventListener("click", () => agent.trigger("form_saved", { id }))  //
 | D6 | 기준 A2UI 버전 | v1.0 RC (`callRendererFunction` 필요). v0.9 플랫폼은 상태 바인딩까지만 |
 | D7 | Swift 기반 | 공식 `A2UISwiftUI` (branch 지정). 배포 태그 생기면 전환 |
 | D8 | 첫 전송 어댑터 | AG-UI. agent-loader 는 어댑터 대신 L4 skill 로 연동, 상호 의존 없음 |
+| D9 | 저장소 배치 · 테스트 | 루트에 `package.json` · `Package.swift`, 언어별 폴더. 언어 공통 동작은 `conformance/` JSON 케이스 (상세 `specs/conformance.md`) |
 
 D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만 해당.
 
