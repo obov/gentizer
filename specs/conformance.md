@@ -90,5 +90,5 @@ confirm "approve" | "deny" | "throw" | "absent"        runtime 생성 옵션. ab
 - 언어마다 하나씩, 각 언어 테스트 명령 (`npm run check` · `swift test`) 에 포함
 - `skip` 목록: 케이스 id 와 이유. 미구현 suite 는 suite 단위 skip 허용
 - 케이스 파일이 없거나 형식 위반 (schema.json) 이면 실패
-- Swift 실행기 위치: `swift/Tests/GentizerConformanceTests/` (현재 전체 suite skip)
+- Swift 실행기 위치: `swift/Tests/GentizerConformanceTests/` (전체 suite 실행, skip 없음)
 - TS 실행기 위치: `packages/core/test/conformance.test.ts` (validate · catalog · runtime), `packages/ag-ui/test/conformance.test.ts`, `packages/a2ui/test/conformance.test.ts`
