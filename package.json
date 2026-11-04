@@ -1,0 +1,10 @@
+{
+  "name": "gentizer",
+  "private": true,
+  "scripts": {
+    "postinstall": "gnam link"
+  },
+  "devDependencies": {
+    "@obov/gnam": "^0.4.0"
+  }
+}
