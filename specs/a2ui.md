@@ -33,5 +33,35 @@ A2UI Swift (`A2UISwiftUI` · `A2UISwiftCore`) 는 fork `https://github.com/obov/
 플랫폼    A2UI Swift 하한 iOS 17 · macOS 14 (gentizer Swift core 는 iOS 16 · macOS 13)
 ```
 
-- 미결: Swift A2UI 브리지 위치. A2UI 플랫폼 하한이 더 높아 같은 패키지 target 이면 Gentizer 전체 하한이 iOS 17 로 오름 → 별도 패키지 · 하한 상향 중 선택
+- 하한 iOS 17 · macOS 14 가 필요한 것은 surface 렌더링 (`A2UISwiftUI`). RPC 브리지는 A2UI Swift 에 의존하지 않는다 (아래 'Swift')
+- 미결: surface 렌더링 위치 (Gentizer 하한 상향 · 별도 패키지). 렌더링 작업 착수 때 결정
 - upstream 이 SwiftPM 용 semver 태그를 붙이면 fork 대신 upstream 으로 전환
+
+## Swift
+
+target · product `GentizerA2UI` (`swift/Sources/GentizerA2UI`), 의존성 `Gentizer` 만. 하한은 패키지와 같은 iOS 16 · macOS 13.
+A2UI Swift `RPCHandler` 를 쓰지 않는다: 함수 실행이 동기라 async `runtime.invoke` (confirm 대기) 를 못 부르고, 실행 오류 message 를 고정 문구로 바꿔 `DENIED: …` 접두를 잃는다.
+
+```text
+A2UICallRendererFunctionMessage · A2UIRendererFunctionResponseMessage   A2UI v1.0 JSON 과 같은 키 (Codable)
+A2UIBridge(runtime, catalogId:)      @MainActor
+  catalog() throws -> JSONValue      toA2uiCatalog(runtime.manifest(), catalogId:)
+  handle(message) async -> response  throw 없음
+```
+
+`handle` 순서 (TS `RpcHandler` 와 같은 오류 코드):
+
+```text
+1  catalogId 생략 → 브리지 catalogId. 다른 catalogId → INVALID_FUNCTION_CALL "Catalog not found: <id>"
+2  version 이 1.0 아님 → INVALID_FUNCTION_CALL
+3  @call 이 현재 manifest 에 없음 → INVALID_FUNCTION_CALL "Function not found: <name>"
+4  runtime.invoke(name, args ?? {})
+   INVALID_ARGS → INVALID_FUNCTION_CALL "Invalid function arguments for '<name>': <message>"
+   그 외 실패  → EXECUTION_ERROR "<code>: <message>"
+   성공        → value
+```
+
+- 응답 `version` 은 메시지 `version`, `functionCallId` 는 메시지 값
+- `surfaceId` 있는 메시지는 surface 가 없으므로 INVALID_FUNCTION_CALL "Surface not found: <id>" (TS 와 같음)
+- 인자 검증은 runtime 규칙 (object · required) 까지. 그 외 JSON Schema 검증 (타입 · enum 등) 미구현
+- conformance `a2ui` suite 를 Swift 실행기에서도 통과
