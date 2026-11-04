@@ -12,7 +12,8 @@ state     이름 → { description, schema? (JSON Schema) }
 views     이름 → { description }
 ```
 
-- 이름 규칙: 소문자 영숫자 · `.` · `_` · `-`, 점으로 구분된 segment, 첫 글자 영문 (예: `cart.add`, `filter.set`)
+- 이름 규칙: `^[a-z][a-z0-9_]*$`, 64자 이하. 구분은 `_` (예: `cart_add`, `filter_set`)
+  - A2UI v1.0 function 이름 (UAX #31 식별자, `.` · `-` 불가) · LLM tool 이름 (`^[a-zA-Z0-9_-]{1,64}$`) 공통 부분집합. 변환 없이 그대로 사용
 - `input` 생략 시 인자 없는 object (`{ type: "object", properties: {} }`)
 - `input` 최상위 `type` 은 `"object"` 만 허용
 - `returns` 생략 시 `"void"`. 허용값: `string` · `number` · `boolean` · `array` · `object` · `any` · `void`
