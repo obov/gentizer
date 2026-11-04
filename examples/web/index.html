@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>gentizer 예시 — 미니 상점</title>
+    <style>
+      body { font: 14px/1.5 system-ui, sans-serif; margin: 0; display: grid; grid-template-columns: 1fr 380px; height: 100vh; }
+      main, aside { padding: 16px; overflow: auto; }
+      aside { border-left: 1px solid #ddd; background: #fafafa; display: flex; flex-direction: column; gap: 8px; }
+      ul { padding: 0; list-style: none; }
+      li { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+      #chat { flex: 1; overflow: auto; border: 1px solid #ddd; background: #fff; padding: 8px; }
+      #chat div { margin: 4px 0; white-space: pre-wrap; word-break: break-all; }
+      .user { color: #0550ae; } .agent { color: #116329; } .sys { color: #888; font-size: 12px; }
+      form { display: flex; gap: 4px; } input[name=text] { flex: 1; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>미니 상점</h1>
+      <label>분류
+        <select id="filter">
+          <option value="all">전체</option><option value="shoes">신발</option><option value="bags">가방</option>
+        </select>
+      </label>
+      <ul id="products"></ul>
+      <h2>장바구니 <button id="clear">비우기</button></h2>
+      <ul id="cart"></ul>
+    </main>
+    <aside>
+      <label>에이전트
+        <select id="mode">
+          <option value="ag-ui">AG-UI (mock agent :8782)</option>
+          <option value="a2ui">A2UI v1.0 (mock agent :8781)</option>
+        </select>
+      </label>
+      <div id="chat"></div>
+      <form id="form"><input name="text" placeholder="신발만 보여줘 · 2번 담아줘 · 장바구니 비워줘" autocomplete="off" /><button>보내기</button></form>
+    </aside>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

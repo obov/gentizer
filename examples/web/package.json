@@ -1,0 +1,17 @@
+{
+  "name": "@gentizer/example-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "npm run build --prefix ../..",
+    "dev": "node dev.mjs",
+    "agent": "node mock/agent-server.mjs",
+    "a2ui": "node mock/a2ui-server.mjs"
+  },
+  "dependencies": {
+    "@gentizer/core": "0.0.0",
+    "@gentizer/a2ui": "0.0.0",
+    "@gentizer/ag-ui": "0.0.0",
+    "@ag-ui/client": "1.0.3"
+  }
+}

@@ -3,12 +3,14 @@
   "private": true,
   "scripts": {
     "postinstall": "gnam link",
-    "check": "npm run check --workspaces"
+    "check": "npm run check --workspaces --if-present",
+    "build": "npm run build -w @gentizer/core -w @gentizer/a2ui -w @gentizer/ag-ui -w @gentizer/react"
   },
   "devDependencies": {
     "@obov/gnam": "^0.4.0"
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ]
 }
