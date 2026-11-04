@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 구현. agent-loader 어댑터 · HTML 속성 · Swift 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 구현. HTML 속성 · Swift · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -75,7 +75,7 @@ saveBtn.addEventListener("click", () => agent.trigger("form_saved", { id }))  //
 | D5 | 저장소 · 라이선스 | `~/Dev/gentizer` 독립 저장소, Apache-2.0 |
 | D6 | 기준 A2UI 버전 | v1.0 RC (`callRendererFunction` 필요). v0.9 플랫폼은 상태 바인딩까지만 |
 | D7 | Swift 기반 | 공식 `A2UISwiftUI` (branch 지정). 배포 태그 생기면 전환 |
-| D8 | 첫 전송 어댑터 | AG-UI · agent-loader WebSocket |
+| D8 | 첫 전송 어댑터 | AG-UI. agent-loader 는 어댑터 대신 L4 skill 로 연동, 상호 의존 없음 |
 
 D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만 해당.
 
@@ -132,7 +132,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 1. (완료) @a2ui/react 0.15 · A2UISwiftUI 의 v1.0 지원 범위 확인
 2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
 3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
-4. (일부) 전송 어댑터: AG-UI (`packages/ag-ui`). 남음: agent-loader WebSocket
+4. (완료) 전송 어댑터: AG-UI (`packages/ag-ui`). agent-loader 연동은 6 의 skill 로 (상호 의존 없음)
 5. Swift 바인딩
 6. L4 skill (대상 프로젝트에 표시 추가 자동화)
 ```
