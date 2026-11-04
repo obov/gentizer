@@ -1,0 +1,9 @@
+{
+  "name": "@gentizer/example-swift",
+  "private": true,
+  "scripts": {
+    "build": "swift build --package-path ShopExample",
+    "dev": "swift run --package-path ShopExample ShopExample",
+    "smoke": "GENTIZER_EXAMPLE_SMOKE=1 swift run --package-path ShopExample ShopExample"
+  }
+}

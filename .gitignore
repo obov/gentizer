@@ -2,3 +2,5 @@ node_modules/
 dist/
 swift/.build/
 swift/Package.resolved
+examples/swift/ShopExample/.build/
+examples/swift/ShopExample/Package.resolved

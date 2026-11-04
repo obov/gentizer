@@ -23,10 +23,11 @@ swift/Tests/GentizerConformanceTests/  conformance 실행기
 
 ## 예시 앱
 
-`examples/swift/` — macOS SwiftUI 실행 파일 (SwiftPM, `swift/` 를 path 의존). 웹 예시와 같은 미니 상점 + mock 에이전트 (`examples/mock`).
+`examples/swift/` — macOS SwiftUI 실행 파일 (SwiftPM 패키지 `examples/swift/ShopExample`, `swift/` 를 path 의존. 폴더 이름 `swift` 가 의존 패키지 identity 와 겹치지 않게 한 단계 아래). 웹 예시와 같은 미니 상점 + mock 에이전트 (`examples/mock`).
 
 ```text
-실행        npm start -w @gentizer/example-mock (mock 두 개) · swift run --package-path examples/swift
+실행        npm start -w @gentizer/example-mock (mock 두 개) · npm run dev -w @gentizer/example-swift
+확인        npm run smoke -w @gentizer/example-swift: mock 과 정해진 대화 (AG-UI 담기 · A2UI 필터 · 추천 surface · trigger) 결과 출력 후 종료
 표시        .agentAction (filter_set · cart_add · cart_clear confirm) · .agentState (cart · filter) · .agentView
 승인        AgentConfirmation + .agentConfirmation
 AG-UI       AGUIHTTPAgent (:8782) + runWithFrontendTools, 저장 버튼 trigger → connectTriggers
