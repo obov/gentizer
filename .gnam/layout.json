@@ -1,51 +1,202 @@
 {
   "structure": [
-    { "name": ".gitignore" },
-    { "name": "{PascalCase}.md" },
-    { "name": "package.json" },
-    { "name": "package-lock.json" },
-    { "name": "gnam.json" },
-    { "name": "tsconfig.base.json" },
-    { "name": "Package.swift" },
-    { "name": ".agents", "children": [] },
-    { "name": ".claude", "children": [] },
-    { "name": ".githooks", "children": [] },
-    { "name": ".gnam", "children": [] },
-    { "name": "lore", "children": [{ "name": "README.md" }, { "name": "{kebab-case}.md" }] },
-    { "name": "specs", "children": [{ "name": "README.md" }, { "name": "{kebab-case}.md" }] },
     {
-      "name": "conformance",
-      "enforceExistence": ["schema.json"],
+      "name": ".gitignore"
+    },
+    {
+      "name": "{PascalCase}.md"
+    },
+    {
+      "name": "package.json"
+    },
+    {
+      "name": "package-lock.json"
+    },
+    {
+      "name": "gnam.json"
+    },
+    {
+      "name": "tsconfig.base.json"
+    },
+    {
+      "name": ".agents",
+      "children": []
+    },
+    {
+      "name": ".claude",
+      "children": []
+    },
+    {
+      "name": ".githooks",
+      "children": []
+    },
+    {
+      "name": ".gnam",
+      "children": []
+    },
+    {
+      "name": "lore",
       "children": [
-        { "name": "schema.json" },
-        { "name": "{kebab-case}", "children": [{ "name": "{kebab-case}.json" }] }
+        {
+          "name": "README.md"
+        },
+        {
+          "name": "{kebab-case}.md"
+        }
       ]
     },
-    { "name": "packages", "children": [{ "ruleId": "package" }] },
+    {
+      "name": "specs",
+      "children": [
+        {
+          "name": "README.md"
+        },
+        {
+          "name": "{kebab-case}.md"
+        }
+      ]
+    },
+    {
+      "name": "conformance",
+      "enforceExistence": [
+        "schema.json"
+      ],
+      "children": [
+        {
+          "name": "schema.json"
+        },
+        {
+          "name": "{kebab-case}",
+          "children": [
+            {
+              "name": "{kebab-case}.json"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "packages",
+      "children": [
+        {
+          "ruleId": "package"
+        }
+      ]
+    },
     {
       "name": "examples",
       "children": [
-        { "name": "{kebab-case}", "enforceExistence": ["README.md", "package.json"], "children": [] }
+        {
+          "name": "{kebab-case}",
+          "enforceExistence": [
+            "README.md",
+            "package.json"
+          ],
+          "children": []
+        }
       ]
     },
-    { "name": "swift", "children": [] },
-    { "name": "dart", "children": [] },
-    { "name": "kotlin", "children": [] }
+    {
+      "name": "swift",
+      "enforceExistence": [
+        "Package.swift",
+        "VERSION"
+      ],
+      "children": [
+        {
+          "name": "Package.swift"
+        },
+        {
+          "name": "VERSION"
+        },
+        {
+          "name": "README.md"
+        },
+        {
+          "name": "Sources",
+          "children": [
+            {
+              "name": "{PascalCase}",
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "Tests",
+          "children": [
+            {
+              "name": "{PascalCase}Tests",
+              "children": [
+                {
+                  "name": "{PascalCase}.swift"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dart",
+      "children": []
+    },
+    {
+      "name": "kotlin",
+      "children": []
+    }
   ],
   "rules": {
     "package": {
       "name": "{kebab-case}",
-      "enforceExistence": ["package.json", "tsconfig.json", "src", "test"],
+      "enforceExistence": [
+        "package.json",
+        "tsconfig.json",
+        "src",
+        "test"
+      ],
       "children": [
-        { "name": "package.json" },
-        { "name": "README.md" },
-        { "name": "tsconfig.json" },
-        { "name": "tsconfig.build.json" },
-        { "name": "vitest.config.ts" },
-        { "name": "src", "children": [{ "name": "{kebab-case}.(ts|tsx)" }] },
-        { "name": "test", "children": [{ "name": "{kebab-case}.test.(ts|tsx)" }, { "name": "{kebab-case}.ts" }] }
+        {
+          "name": "package.json"
+        },
+        {
+          "name": "README.md"
+        },
+        {
+          "name": "tsconfig.json"
+        },
+        {
+          "name": "tsconfig.build.json"
+        },
+        {
+          "name": "vitest.config.ts"
+        },
+        {
+          "name": "src",
+          "children": [
+            {
+              "name": "{kebab-case}.(ts|tsx)"
+            }
+          ]
+        },
+        {
+          "name": "test",
+          "children": [
+            {
+              "name": "{kebab-case}.test.(ts|tsx)"
+            },
+            {
+              "name": "{kebab-case}.ts"
+            }
+          ]
+        }
       ]
     }
   },
-  "ignorePatterns": ["**/node_modules/**", "**/dist/**", ".DS_Store", "**/.DS_Store"]
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/dist/**",
+    ".DS_Store",
+    "**/.DS_Store",
+    "swift/.build/**"
+  ]
 }
