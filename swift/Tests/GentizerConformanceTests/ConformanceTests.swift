@@ -1,5 +1,5 @@
 import Foundation
-import Gentizer
+@testable import Gentizer
 import Testing
 
 /// suite → skip 사유. 구현하면 지우고 아래 실행 테스트를 채운다
@@ -79,6 +79,63 @@ struct CatalogConformance {
             #expect(throws: InvalidManifestError.self) { try build() }
         } else {
             #expect(try build() == c.value["catalog"])
+        }
+    }
+}
+
+@Suite("conformance runtime")
+@MainActor
+struct RuntimeConformance {
+    @Test(arguments: try cases("runtime"))
+    func run(_ c: LoadedCase) async throws {
+        let recorder = ConfirmRecorder()
+        let rt = recorder.makeRuntime(c.value["confirm"]?.stringValue)
+        var handles: [String: @MainActor () -> Void] = [:]
+        for (i, step) in (c.value["steps"]?.arrayValue ?? []).enumerated() {
+            let op = step["op"]?.stringValue ?? ""
+            let at = Comment(rawValue: "\(c.id) step \(i) \(op)")
+            let name = step["name"]?.stringValue ?? ""
+            switch op {
+            case "register":
+                if step["expectError"] == "DUPLICATE_NAME" {
+                    #expect(throws: DuplicateNameError.self, at) { try register(rt, step) }
+                } else {
+                    let off = try register(rt, step)
+                    if let h = step["handle"]?.stringValue { handles[h] = off }
+                }
+            case "unregister":
+                let off = try #require(handles[step["handle"]?.stringValue ?? ""], at)
+                off()
+            case "invoke":
+                let before = recorder.calls.count
+                let r = if let args = step["args"] { await rt.invoke(name, args: args) } else { await rt.invoke(name) }
+                let expect = step["expect"] ?? .null
+                switch r {
+                case .success(let value):
+                    #expect(expect["ok"] == true && expect["value"] == value, at)
+                case .failure(let e):
+                    #expect(expect["ok"] == false && expect["code"] == .string(e.code.rawValue), at)
+                }
+                if let want = step["expectConfirm"] {
+                    let made = recorder.calls[before...].map(\.json)
+                    #expect(made == (want == .null ? [] : [want]), at)
+                }
+            case "manifest":
+                let m = rt.manifest()
+                #expect(m.json == step["expect"], at)
+                for (section, order) in step["expectOrder"]?.objectValue ?? [:] {
+                    let names = switch section {
+                    case "actions": m.actions.names
+                    case "state": m.state.names
+                    default: m.views.names
+                    }
+                    #expect(names.map(JSONValue.string) == order.arrayValue, at)
+                }
+            case "readState":
+                #expect((rt.readState(name) ?? .null) == step["expect"], at)
+            default:
+                Issue.record(Comment(rawValue: "알 수 없는 op \(op)"))
+            }
         }
     }
 }
