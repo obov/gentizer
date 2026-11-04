@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: 기획. 코드 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core 구현. 바인딩 · 전송 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -92,8 +92,8 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 | Flutter (2차) | `a2ui_flutter` | wip |
 
 > [!NOTE]
-> 확인 필요: `@a2ui/react` 0.15의 서브 export는 `v0_8` · `v0_9`뿐, `v1_0` 없음. `@a2ui/web_core` 0.15에는 `./v1_0` 있음.
-> React 패키지 루트 export가 v1.0인지 · `callRendererFunction` 지원 여부를 착수 전에 확인.
+> 확인 결과 (2026-11-04): `@a2ui/react` 0.15 는 v0.9 컴포넌트 API, v1.0 RPC (`callRendererFunction`) 는 `@a2ui/web_core` 0.15 `RpcHandler` 에 있음.
+> `A2UISwiftUI` 도 v1.0 `RPCHandler` 보유. 상세 `specs/core.md`
 
 ## 비슷한 프로젝트와 차이
 
@@ -127,8 +127,8 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 ## 다음 단계
 
 ```text
-1. @a2ui/react 0.15 · A2UISwiftUI 의 v1.0 지원 범위 실제 확인 (NOTE 항목)
-2. L2 core manifest 스키마 정의 (actions · state · views · catalog → A2UI v1.0 매핑)
+1. (완료) @a2ui/react 0.15 · A2UISwiftUI 의 v1.0 지원 범위 확인
+2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 (`packages/core`)
 3. React 바인딩 + Next.js ssr:false 래퍼
 4. 전송 어댑터: AG-UI · agent-loader WebSocket
 5. Swift 바인딩
