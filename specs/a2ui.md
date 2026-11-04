@@ -129,7 +129,22 @@ A2UISurfaceHost(runtime, catalogId:)   @MainActor ObservableObject. A2UIBridge �
 A2UISurfaceView(host:, surfaceID:)     SwiftUI. 활성 surface 면 A2UI Swift Surface (basic catalog v1.0), 없으면 EmptyView
 ```
 
-- component catalog 는 A2UI basic catalog. 앱 컴포넌트 catalog 등록 (Smart Wrapper) 미구현
+앱 컴포넌트 catalog (Smart Wrapper): 앱의 기존 SwiftUI 뷰를 A2UI 컴포넌트로 감싸 에이전트 surface 에서 쓰게 한다.
+
+```text
+A2UIAppComponent(name, description:, properties: JSONValue = [:], required: [String] = []) { props in View }
+    properties   JSON Schema properties (컴포넌트 속성). 스키마 = { type: object, description,
+                 properties: { component: { const: name }, ...properties }, required: ["component", ...required] }
+A2UIComponentProps   id · string(_:) · double(_:) · bool(_:) (바인딩 해석 후 값) · child(_:) -> AnyView? · action(_:) -> (() -> Void)?
+A2UISurfaceHost(..., components: [A2UIAppComponent] = [], componentCatalogId: String? = nil)
+    componentCatalogId   기본 "<catalogId>#components". components 가 비면 app catalog 없음
+    app catalog          v1.0, 앱 컴포넌트 + basic catalog 컴포넌트 (같은 이름은 앱 우선). basic catalog id 도 그대로 사용 가능
+  componentCatalog() -> JSONValue?   에이전트에 보낼 정의 { catalogId, protocolVersion: "1.0", components: { <name>: 스키마 } } (앱 컴포넌트만). 없으면 nil
+A2UISurfaceView      host 의 catalog (app · basic) 로 그린다
+```
+
+- 이름 규칙: A2UI 컴포넌트 이름 (`Surface` 금지). basic catalog 와 같은 이름이면 앱 것이 이긴다
+- 웹은 `createA2uiSurfaceHost` 의 `catalogs` 에 web_core `Catalog` (React 는 `@a2ui/react` `createComponentImplementation`) 를 직접 넣는다
 
 Swift 렌더러 → 에이전트 · 상태 동기화는 웹 surface host 와 같은 규칙:
 
