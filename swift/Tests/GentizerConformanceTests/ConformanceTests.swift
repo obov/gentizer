@@ -1,12 +1,11 @@
 import Foundation
 @testable import Gentizer
+import GentizerA2UI
 import GentizerAGUI
 import Testing
 
 /// suite → skip 사유. 구현하면 지우고 아래 실행 테스트를 채운다
-let skippedSuites: [String: String] = [
-    "a2ui": "Swift A2UI 브리지 미구현",
-]
+let skippedSuites: [String: String] = [:]
 
 let allSuites = ["validate", "catalog", "runtime", "ag-ui", "a2ui"]
 
@@ -177,7 +176,27 @@ struct AgUiConformance {
     }
 }
 
-@Suite("conformance 미구현")
-struct SkippedConformance {
-    @Test("a2ui", .disabled("Swift A2UI 브리지 미구현")) func a2ui() {}
+@Suite("conformance a2ui")
+@MainActor
+struct A2uiConformance {
+    @Test(arguments: try cases("a2ui"))
+    func run(_ c: LoadedCase) async throws {
+        let recorder = ConfirmRecorder()
+        let rt = recorder.makeRuntime(c.value["confirm"]?.stringValue)
+        try registerDecls(rt, actions: c.value["actions"], states: nil)
+        let message = try (c.value["message"] ?? .null).decode(as: A2UICallRendererFunctionMessage.self)
+        let bridge = A2UIBridge(rt, catalogId: c.value["catalogId"]?.stringValue ?? "")
+        let r = await bridge.handle(message).rendererFunctionResponse
+        #expect(r.functionCallId == message.callRendererFunction.functionCallId)
+        let expect = c.value["expect"] ?? .null
+        if let code = expect["errorCode"]?.stringValue {
+            #expect(r.error?.code == code)
+            if let prefix = expect["messagePrefix"]?.stringValue {
+                #expect(r.error?.message.hasPrefix(prefix) == true, "\(r.error?.message ?? "")")
+            }
+        } else {
+            #expect(r.error == nil)
+            #expect(r.value == expect["value"])
+        }
+    }
 }
