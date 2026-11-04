@@ -17,7 +17,7 @@ swift/Tests/GentizerTests/             Swift 고유 단위 테스트
 swift/Tests/GentizerConformanceTests/  conformance 실행기
 ```
 
-- swift-tools-version 6.0, 플랫폼 iOS 16 · macOS 13 이상
+- swift-tools-version 6.0, 플랫폼 iOS 17 · macOS 14 이상 (A2UI Swift 하한, specs/a2ui.md 'Swift 의존성')
 - 라이브러리 product `Gentizer` 하나. SwiftUI 바인딩 · AG-UI 어댑터는 별도 target (이후 plan)
 - 빌드 산출물 `swift/.build/` 은 git 무시
 

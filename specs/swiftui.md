@@ -1,7 +1,7 @@
 # swiftui — SwiftUI 바인딩
 
 SwiftUI 뷰가 화면에 있는 동안 액션 · 상태 · 화면을 Swift core 런타임 (`specs/swift.md` 'core API') 에 등록한다.
-target · product `GentizerSwiftUI` (`swift/Sources/GentizerSwiftUI`), 의존성 `Gentizer` · SwiftUI. 플랫폼은 `Gentizer` 와 같음 (iOS 16 · macOS 13).
+target · product `GentizerSwiftUI` (`swift/Sources/GentizerSwiftUI`), 의존성 `Gentizer` · SwiftUI. 플랫폼은 `Gentizer` 와 같음 (iOS 17 · macOS 14).
 
 ## API
 

@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "Gentizer",
-    platforms: [.iOS(.v16), .macOS(.v13)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "Gentizer", targets: ["Gentizer"]),
         .library(name: "GentizerSwiftUI", targets: ["GentizerSwiftUI"]),
