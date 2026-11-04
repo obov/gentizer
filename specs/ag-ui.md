@@ -115,5 +115,5 @@ RUN_STARTED · RUN_FINISHED · STEP_* · RAW · CUSTOM   메시지 변화 없음
 ```text
 abortRun()       진행 중 runAgent 의 요청을 취소. runAgent 는 CancellationError 로 끝난다
 Task 취소        runAgent 를 실행 중인 Task 가 취소돼도 같다
-반영             취소 전까지 반영한 메시지 · state 는 유지
+반영             이벤트마다 messages · state 에 바로 반영 (진행 중에도 보임). 취소 전까지 반영한 것은 유지
 ```

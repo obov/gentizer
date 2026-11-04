@@ -9,6 +9,8 @@ final class FakeServer: URLProtocol, @unchecked Sendable {
     struct Reply: Sendable {
         var status: Int
         var body: String
+        /// true 면 본문을 보낸 뒤 끝내지 않는다 (끝나지 않는 SSE)
+        var hang = false
     }
 
     nonisolated(unsafe) static var replies: [String: Reply] = [:]
@@ -45,14 +47,14 @@ final class FakeServer: URLProtocol, @unchecked Sendable {
         stride(from: 0, to: data.count, by: 7).forEach {
             client?.urlProtocol(self, didLoad: data.subdata(in: $0..<min($0 + 7, data.count)))
         }
-        client?.urlProtocolDidFinishLoading(self)
+        if !reply.hang { client?.urlProtocolDidFinishLoading(self) }
     }
 
     override func stopLoading() {}
 
-    static func serve(_ path: String, status: Int = 200, events: [String]) {
+    static func serve(_ path: String, status: Int = 200, events: [String], hang: Bool = false) {
         lock.lock()
-        replies[path] = Reply(status: status, body: events.map { "data: \($0)\n\n" }.joined())
+        replies[path] = Reply(status: status, body: events.map { "data: \($0)\n\n" }.joined(), hang: hang)
         lock.unlock()
     }
 
@@ -129,5 +131,28 @@ struct HTTPAgentTests {
         let a = agent("/add")
         a.addMessages([AGUIMessage(id: "x", role: "tool", content: "1", toolCallId: "t")])
         #expect(a.messages.map(\.id) == ["x"])
+    }
+
+    @Test func abortRunCancelsAndKeepsAppliedMessages() async throws {
+        FakeServer.serve("/hang", events: [
+            #"{"type":"TEXT_MESSAGE_START","messageId":"m1","role":"assistant"}"#,
+            #"{"type":"TEXT_MESSAGE_CONTENT","messageId":"m1","delta":"부분"}"#,
+        ], hang: true)
+        let a = agent("/hang")
+        let run = Task { try await a.runAgent(AGUIRunParameters()) }
+        for _ in 0..<400 where a.messages.first?.content != "부분" { try await Task.sleep(nanoseconds: 5_000_000) }
+        a.abortRun()
+        await #expect(throws: CancellationError.self) { try await run.value }
+        #expect(a.messages == [AGUIMessage(id: "m1", role: "assistant", content: "부분")])
+    }
+
+    @Test func taskCancelCancelsRun() async throws {
+        FakeServer.serve("/hang2", events: [#"{"type":"STATE_SNAPSHOT","snapshot":{"n":1}}"#], hang: true)
+        let a = agent("/hang2")
+        let run = Task { try await a.runAgent(AGUIRunParameters()) }
+        for _ in 0..<400 where a.state != ["n": 1] { try await Task.sleep(nanoseconds: 5_000_000) }
+        run.cancel()
+        await #expect(throws: CancellationError.self) { try await run.value }
+        #expect(a.state == ["n": 1])
     }
 }

@@ -34,6 +34,7 @@ public final class AGUIHTTPAgent: AGUIAgent {
     public private(set) var messages: [AGUIMessage]
     public private(set) var state: JSONValue
     private let session: URLSession
+    private var current: Task<Void, Error>?
 
     public init(url: URL, headers: [String: String] = [:], threadId: String = UUID().uuidString,
                 messages: [AGUIMessage] = [], state: JSONValue = [:], session: URLSession = .shared) {
@@ -49,23 +50,49 @@ public final class AGUIHTTPAgent: AGUIAgent {
         self.messages += messages
     }
 
+    /// 진행 중 runAgent 의 요청 취소. runAgent 는 CancellationError 로 끝나고, 그때까지 반영한 메시지 · state 는 유지
+    public func abortRun() {
+        current?.cancel()
+    }
+
     public func runAgent(_ params: AGUIRunParameters) async throws {
-        let (bytes, response) = try await session.bytes(for: request(params))
-        if let status = (response as? HTTPURLResponse)?.statusCode, !(200..<300).contains(status) {
-            throw AGUIError.http(status: status)
+        let req = try request(params)
+        let task = Task { @MainActor in try await self.stream(req) }
+        current = task
+        defer { if current == task { current = nil } }
+        try await withTaskCancellationHandler {
+            try await task.value
+        } onCancel: {
+            task.cancel()
         }
-        var parser = SSEParser()
-        var events = AGUIEventState(messages: messages, state: state)
-        defer {
-            messages = events.messages
-            state = events.state
+    }
+
+    private func stream(_ req: URLRequest) async throws {
+        do {
+            let (bytes, response) = try await session.bytes(for: req)
+            if let status = (response as? HTTPURLResponse)?.statusCode, !(200..<300).contains(status) {
+                throw AGUIError.http(status: status)
+            }
+            var parser = SSEParser()
+            var events = AGUIEventState(messages: messages, state: state)
+            // 이벤트마다 반영해 진행 중에도 messages · state 가 보인다
+            func publish(_ data: String) throws {
+                events.apply(data: data)
+                messages = events.messages
+                state = events.state
+                if let error = events.runError { throw error }
+            }
+            for try await byte in bytes {
+                try Task.checkCancellation()
+                if let data = parser.feed(byte) { try publish(data) }
+            }
+            try Task.checkCancellation()
+            if let data = parser.finish() { try publish(data) }
+        } catch {
+            // URLSession 은 취소를 URLError.cancelled 로 알리기도 한다
+            if Task.isCancelled, !(error is CancellationError) { throw CancellationError() }
+            throw error
         }
-        for try await byte in bytes {
-            if let data = parser.feed(byte) { events.apply(data: data) }
-            if let error = events.runError { throw error }
-        }
-        if let data = parser.finish() { events.apply(data: data) }
-        if let error = events.runError { throw error }
     }
 
     func request(_ params: AGUIRunParameters) throws -> URLRequest {
