@@ -9,12 +9,12 @@ const filterDef = {
 describe("등록", () => {
   test("등록 · 해제 · 재등록", () => {
     const rt = createAgentRuntime();
-    const off = rt.action("cart.add", { description: "담기" }, () => {});
-    expect(Object.keys(rt.manifest().actions)).toEqual(["cart.add"]);
+    const off = rt.action("cart_add", { description: "담기" }, () => {});
+    expect(Object.keys(rt.manifest().actions)).toEqual(["cart_add"]);
     off();
     expect(rt.manifest().actions).toEqual({});
-    rt.action("cart.add", { description: "담기" }, () => {});
-    expect(Object.keys(rt.manifest().actions)).toEqual(["cart.add"]);
+    rt.action("cart_add", { description: "담기" }, () => {});
+    expect(Object.keys(rt.manifest().actions)).toEqual(["cart_add"]);
   });
 
   test("등록 중 같은 이름은 DuplicateNameError", () => {
@@ -74,19 +74,19 @@ describe("invoke", () => {
   test("INVALID_ARGS: object 아님 · required 누락", async () => {
     const rt = createAgentRuntime();
     const run = vi.fn();
-    rt.action("filter.set", filterDef, run);
-    expect(await rt.invoke("filter.set", [])).toMatchObject({ ok: false, error: { code: "INVALID_ARGS" } });
-    expect(await rt.invoke("filter.set", {})).toMatchObject({ ok: false, error: { code: "INVALID_ARGS" } });
+    rt.action("filter_set", filterDef, run);
+    expect(await rt.invoke("filter_set", [])).toMatchObject({ ok: false, error: { code: "INVALID_ARGS" } });
+    expect(await rt.invoke("filter_set", {})).toMatchObject({ ok: false, error: { code: "INVALID_ARGS" } });
     expect(run).not.toHaveBeenCalled();
   });
 
   test("실행 결과 전달 · args 생략 시 {} · undefined → null", async () => {
     const rt = createAgentRuntime();
-    rt.action("filter.set", filterDef, (a) => `set ${a.category}`);
+    rt.action("filter_set", filterDef, (a) => `set ${a.category}`);
     const run = vi.fn();
-    rt.action("cart.clear", { description: "비우기" }, run);
-    expect(await rt.invoke("filter.set", { category: "shoes" })).toEqual({ ok: true, value: "set shoes" });
-    expect(await rt.invoke("cart.clear")).toEqual({ ok: true, value: null });
+    rt.action("cart_clear", { description: "비우기" }, run);
+    expect(await rt.invoke("filter_set", { category: "shoes" })).toEqual({ ok: true, value: "set shoes" });
+    expect(await rt.invoke("cart_clear")).toEqual({ ok: true, value: null });
     expect(run).toHaveBeenCalledWith({});
   });
 

@@ -1,10 +1,11 @@
 import { describe, expect, test } from "vitest";
-import { FunctionDefinitionSchema } from "@a2ui/web_core/v1_0";
+import { Catalog, type FunctionImplementation } from "@a2ui/web_core";
+import { FunctionDefinitionSchema, RpcHandler } from "@a2ui/web_core/v1_0";
 import { createManifestBuilder, InvalidManifestError, toA2uiCatalog, type Manifest } from "../src/index.js";
 
 const manifest = createManifestBuilder()
-  .action("cart.add", { description: "장바구니 담기" })
-  .action("filter.set", {
+  .action("cart_add", { description: "장바구니 담기" })
+  .action("filter_set", {
     description: "목록 필터 변경",
     input: { type: "object", properties: { category: { type: "string" } }, required: ["category"] },
     confirm: true,
@@ -20,34 +21,34 @@ describe("toA2uiCatalog", () => {
   test("catalog 머리", () => {
     expect(catalog.protocolVersion).toBe("1.0");
     expect(catalog.catalogId).toBe("https://example.com/shop/catalog.json");
-    expect(Object.keys(catalog.functions)).toEqual(["cart.add", "filter.set"]);
+    expect(Object.keys(catalog.functions)).toEqual(["cart_add", "filter_set"]);
   });
 
   test("input 생략 · returns 생략 · confirm 생략", () => {
-    expect(catalog.functions["cart.add"]).toEqual({
+    expect(catalog.functions["cart_add"]).toEqual({
       type: "object",
       description: "장바구니 담기",
       returnType: "void",
       allowedCallers: "agentOnly",
-      properties: { "@call": { const: "cart.add" }, args: { type: "object", properties: {} } },
+      properties: { "@call": { const: "cart_add" }, args: { type: "object", properties: {} } },
       required: ["@call"],
     });
   });
 
   test("input required → args required", () => {
-    const f = catalog.functions["filter.set"]!;
+    const f = catalog.functions["filter_set"]!;
     expect(f.required).toEqual(["@call", "args"]);
     expect(f.returnType).toBe("boolean");
-    expect(f.properties.args).toEqual(manifest.actions["filter.set"]!.input);
+    expect(f.properties.args).toEqual(manifest.actions["filter_set"]!.input);
   });
 
   test("input 을 복사 (manifest 변경이 catalog 에 번지지 않음)", () => {
-    expect(catalog.functions["filter.set"]!.properties.args).not.toBe(manifest.actions["filter.set"]!.input);
+    expect(catalog.functions["filter_set"]!.properties.args).not.toBe(manifest.actions["filter_set"]!.input);
   });
 
   test("confirm → metadata.extensions.gentizer.confirm, function 정의에는 표시 없음", () => {
-    expect(catalog.metadata).toEqual({ extensions: { gentizer: { confirm: ["filter.set"] } } });
-    expect(catalog.functions["filter.set"]).not.toHaveProperty("requiresUserActivation");
+    expect(catalog.metadata).toEqual({ extensions: { gentizer: { confirm: ["filter_set"] } } });
+    expect(catalog.functions["filter_set"]).not.toHaveProperty("requiresUserActivation");
   });
 
   test("confirm 액션 없으면 metadata 생략", () => {
@@ -76,5 +77,37 @@ describe("toA2uiCatalog", () => {
   test("잘못된 manifest 는 InvalidManifestError", () => {
     const bad = { ...manifest, actions: { Bad: { description: "x" } } } as Manifest;
     expect(() => toA2uiCatalog(bad, { catalogId: "x" })).toThrow(InvalidManifestError);
+  });
+});
+
+describe("web_core 실행", () => {
+  const catalogId = "https://example.com/shop/catalog.json";
+  // Catalog.fromJson 이 생성 catalog 을 파싱하고, 실행 함수만 붙여 RpcHandler 로 호출
+  const parsed = Catalog.fromJson(catalog as unknown as Record<string, unknown>);
+  const impls = [...parsed.functions.values()].map(
+    (f) => ({ ...f, execute: (args: Record<string, unknown>) => `${f.name}:${JSON.stringify(args)}` }) as FunctionImplementation,
+  );
+  const handler = new RpcHandler({ catalogs: [new Catalog(catalogId, "1.0", [], impls)] });
+  const call = (name: string, args: Record<string, unknown>) =>
+    handler.handleCallRendererFunction({
+      version: "1.0",
+      callRendererFunction: { functionCallId: "c1", callFunction: { "@call": name, catalogId, args } },
+    });
+
+  test("allowedCallers agentOnly 로 파싱", () => {
+    expect([...parsed.functions.values()].map((f) => [f.name, f.allowedCallers])).toEqual([
+      ["cart_add", "agentOnly"],
+      ["filter_set", "agentOnly"],
+    ]);
+  });
+
+  test("callRendererFunction 실행 결과", async () => {
+    const r = await call("filter_set", { category: "shoes" });
+    expect(r.rendererFunctionResponse).toEqual({ functionCallId: "c1", value: 'filter_set:{"category":"shoes"}' });
+  });
+
+  test("input.required 누락은 INVALID_FUNCTION_CALL", async () => {
+    const r = await call("filter_set", {});
+    expect(r.rendererFunctionResponse).toMatchObject({ error: { code: "INVALID_FUNCTION_CALL" } });
   });
 });

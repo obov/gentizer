@@ -1,4 +1,4 @@
-import { MANIFEST_VERSION, NAME_PATTERN, RETURN_TYPES } from "./manifest.js";
+import { MANIFEST_VERSION, NAME_MAX_LENGTH, NAME_PATTERN, RETURN_TYPES } from "./manifest.js";
 
 export interface ValidationError {
   path: string;
@@ -30,7 +30,8 @@ export function validateManifest(m: unknown): ValidationResult {
     }
     for (const [name, def] of Object.entries(entries)) {
       const p = `${section}.${name}`;
-      if (!NAME_PATTERN.test(name)) err(p, `이름 규칙 위반: ${NAME_PATTERN}`);
+      if (!NAME_PATTERN.test(name) || name.length > NAME_MAX_LENGTH)
+        err(p, `이름 규칙 위반: ${NAME_PATTERN} · ${NAME_MAX_LENGTH}자 이하`);
       if (!isRecord(def)) {
         err(p, "object 이어야 함");
         continue;

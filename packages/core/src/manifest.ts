@@ -29,5 +29,6 @@ export interface Manifest {
   views: Record<string, ViewDef>;
 }
 
-/** 소문자 영문으로 시작하는 segment 를 점으로 연결. segment 안에는 소문자 영숫자 · _ · - */
-export const NAME_PATTERN = /^[a-z][a-z0-9_-]*(\.[a-z][a-z0-9_-]*)*$/;
+/** 소문자 영문 시작, 소문자 영숫자 · _. A2UI v1.0 function 이름 (UAX #31) 과 LLM tool 이름의 공통 부분집합 */
+export const NAME_PATTERN = /^[a-z][a-z0-9_]*$/;
+export const NAME_MAX_LENGTH = 64;

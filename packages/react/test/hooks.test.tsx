@@ -20,8 +20,8 @@ const wrap = (rt: AgentRuntime) => ({ children }: { children?: React.ReactNode }
 );
 
 function Cart({ label, onAdd }: { label: string; onAdd: (a: Record<string, unknown>) => unknown }) {
-  useAgentAction("cart.add", { description: "담기" }, onAdd);
-  useAgentState("cart.label", { description: "라벨" }, label);
+  useAgentAction("cart_add", { description: "담기" }, onAdd);
+  useAgentState("cart_label", { description: "라벨" }, label);
   useAgentView("cart", { description: "장바구니 영역" });
   return null;
 }
@@ -31,8 +31,8 @@ describe("등록 · 해제", () => {
     const rt = createAgentRuntime();
     const { unmount } = render(<Cart label="a" onAdd={() => {}} />, { wrapper: wrap(rt) });
     const m = rt.manifest();
-    expect(Object.keys(m.actions)).toEqual(["cart.add"]);
-    expect(Object.keys(m.state)).toEqual(["cart.label"]);
+    expect(Object.keys(m.actions)).toEqual(["cart_add"]);
+    expect(Object.keys(m.state)).toEqual(["cart_label"]);
     expect(Object.keys(m.views)).toEqual(["cart"]);
     unmount();
     expect(rt.manifest()).toMatchObject({ actions: {}, state: {}, views: {} });
@@ -47,8 +47,8 @@ describe("등록 · 해제", () => {
     rt.subscribe(listener);
     rerender(<Cart label="b" onAdd={second} />);
     expect(listener).not.toHaveBeenCalled();
-    expect(rt.readState("cart.label")).toBe("b");
-    expect(await rt.invoke("cart.add", { n: 1 })).toEqual({ ok: true, value: 2 });
+    expect(rt.readState("cart_label")).toBe("b");
+    expect(await rt.invoke("cart_add", { n: 1 })).toEqual({ ok: true, value: 2 });
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledWith({ n: 1 });
   });
@@ -59,11 +59,11 @@ describe("등록 · 해제", () => {
       useAgentAction(name, { description: desc }, () => {});
       return null;
     }
-    const { rerender } = render(<A name="a.x" desc="1" />, { wrapper: wrap(rt) });
-    rerender(<A name="a.y" desc="1" />);
-    expect(Object.keys(rt.manifest().actions)).toEqual(["a.y"]);
-    rerender(<A name="a.y" desc="2" />);
-    expect(rt.manifest().actions).toEqual({ "a.y": { description: "2" } });
+    const { rerender } = render(<A name="a_x" desc="1" />, { wrapper: wrap(rt) });
+    rerender(<A name="a_y" desc="1" />);
+    expect(Object.keys(rt.manifest().actions)).toEqual(["a_y"]);
+    rerender(<A name="a_y" desc="2" />);
+    expect(rt.manifest().actions).toEqual({ "a_y": { description: "2" } });
   });
 
   test("StrictMode 이중 마운트에서 오류 없음", () => {
@@ -77,7 +77,7 @@ describe("등록 · 해제", () => {
         </StrictMode>,
       ),
     ).not.toThrow();
-    expect(Object.keys(rt.manifest().actions)).toEqual(["cart.add"]);
+    expect(Object.keys(rt.manifest().actions)).toEqual(["cart_add"]);
   });
 
   test("Provider 밖 Error", () => {
@@ -119,7 +119,7 @@ describe("useAgentManifest", () => {
     }
     render(<App />, { wrapper: wrap(rt) });
     act(() => setShow(true));
-    expect(seen.at(-1)).toEqual(["cart.add"]);
+    expect(seen.at(-1)).toEqual(["cart_add"]);
     act(() => setShow(false));
     expect(seen.at(-1)).toEqual([]);
 

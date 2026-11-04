@@ -4,8 +4,8 @@ import { createManifestBuilder, DuplicateNameError, validateManifest, type Manif
 const valid: Manifest = {
   version: "gentizer/0.1",
   actions: {
-    "cart.add": { description: "장바구니 담기" },
-    "filter.set": {
+    "cart_add": { description: "장바구니 담기" },
+    "filter_set": {
       description: "목록 필터 변경",
       input: { type: "object", properties: { category: { type: "string" } }, required: ["category"] },
       confirm: true,
@@ -39,11 +39,11 @@ describe("validateManifest", () => {
     expect(paths(rest)).toEqual(["views"]);
   });
 
-  test.each(["Cart.add", "cart..add", "1cart", "cart.", "cart add", "cart.Add"])("이름 규칙 위반: %s", (name) => {
+  test.each(["Cart_add", "cart.add", "cart-add", "1cart", "_cart", "cart add", "a".repeat(65)])("이름 규칙 위반: %s", (name) => {
     expect(paths({ ...valid, actions: { [name]: { description: "x" } } })).toEqual([`actions.${name}`]);
   });
 
-  test.each(["cart", "cart.add", "list_v2.item-remove"])("이름 규칙 통과: %s", (name) => {
+  test.each(["cart", "cart_add", "list_v2", "a".repeat(64)])("이름 규칙 통과: %s", (name) => {
     expect(paths({ ...valid, actions: { [name]: { description: "x" } } })).toEqual([]);
   });
 
@@ -86,7 +86,7 @@ describe("validateManifest", () => {
 describe("createManifestBuilder", () => {
   test("등록 결과가 검증 통과", () => {
     const m = createManifestBuilder()
-      .action("cart.add", { description: "담기" })
+      .action("cart_add", { description: "담기" })
       .state("cart", { description: "장바구니" })
       .view("cart", { description: "장바구니 영역" })
       .build();
@@ -94,8 +94,8 @@ describe("createManifestBuilder", () => {
   });
 
   test("같은 구역 중복은 오류", () => {
-    const b = createManifestBuilder().action("cart.add", { description: "담기" });
-    expect(() => b.action("cart.add", { description: "또" })).toThrow(DuplicateNameError);
+    const b = createManifestBuilder().action("cart_add", { description: "담기" });
+    expect(() => b.action("cart_add", { description: "또" })).toThrow(DuplicateNameError);
   });
 
   test("다른 구역 같은 이름은 허용", () => {
