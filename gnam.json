@@ -3,6 +3,7 @@
   "plugins": [
     "@gnam/lore",
     "@gnam/release",
-    "@gnam/recall"
+    "@gnam/recall",
+    "@gnam/layout"
   ]
 }

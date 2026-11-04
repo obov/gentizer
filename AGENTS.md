@@ -12,7 +12,7 @@ npx gnam status    # 설치 · 문제 · 인계 메모 · 요청 · plan 진행 
 
 ```text
 커밋 종류   chore: · refactor: · spec.<topic>.plan: · spec.<topic>.impl: · spec.<topic>.chore:  (<topic> = specs/<topic>.md)
-작업 순서   spec 확인 → plan 커밋 → 한 단위 구현 → 검증 → impl 커밋 (본문 첫 줄 Plan: <plan hash> <단계>)
+작업 순서   spec 확인 → plan 커밋 (본문 Summary: 사람용 한 줄) → 한 단위 구현 → 검증 → impl 커밋 (본문 첫 줄 Plan: <plan hash> <단계>)
 금지        공동 작성자 줄 · squash · plan.md 같은 별도 계획 파일
 강제        commit-msg hook (.githooks) · CI 는 npx gnam verify
 업그레이드  npx gnam outdated → 업그레이드 명령 실행 → 출력된 이전 항목 수행 (gnam link 도 업그레이드 직후 한 번 출력)
@@ -50,6 +50,15 @@ release:    버전 변경 커밋. 'Package: <name> <version>' 절 = GitHub Relea
 언제      단어가 기억나지 않는 결정 · 계획 · 노하우를 찾을 때. git log --grep 으로 안 걸리면 먼저
 명령      npx gnam run recall search <query…> [--limit N]   커밋 · specs/ 절 · lore/ 항목, BM25 (한글 bigram)
 결과      ref 만. 원문은 git show <hash> · <경로>:<줄>. superseded by <hash> = 대체된 plan → 대체한 plan 을 읽는다
+```
+
+### layout (폴더 구조)
+
+```text
+구조      .gnam/layout.json. 새 파일 · 폴더 전 npx gnam run layout where <경로>
+경고      GNAM/layout/* 가 나오면 같은 작업 안에서 처리: 이동 (refactor:) 또는 구조 변경 (layout: 커밋, 본문 Goal:)
+변경      .gnam/layout.json 은 layout: 커밋에서만. 현재 트리 초안 = npx gnam run layout capture <폴더>
+규약      .agents/skills/gnam-layout/references/layout.md
 ```
 
 <!-- gnam:end -->
