@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (validate · catalog · runtime conformance 통과) · SwiftUI 수정자 · AG-UI 변환 (에이전트 연결 제외). HTML 속성 · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift core (validate · catalog · runtime conformance 통과) · SwiftUI 수정자 · AG-UI 변환 · 에이전트 연결 (자체 SSE 클라이언트). HTML 속성 · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -134,7 +134,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
 3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
 4. (완료) 전송 어댑터: AG-UI (`packages/ag-ui`). agent-loader 연동은 6 의 skill 로 (상호 의존 없음)
-5. (일부) Swift: core (`swift/Sources/Gentizer`) · 배포 설정 · conformance 실행기. SwiftUI 수정자 (`GentizerSwiftUI`) · AG-UI 변환 (`GentizerAGUI`). 남음: AG-UI 에이전트 연결 (미결: Swift 클라이언트, specs/ag-ui.md) · A2UI · confirm UI · examples/swift · 배포 저장소 생성
+5. (일부) Swift: core (`swift/Sources/Gentizer`) · 배포 설정 · conformance 실행기. SwiftUI 수정자 (`GentizerSwiftUI`) · AG-UI 변환 · 에이전트 연결 (`GentizerAGUI`). 남음: A2UI · confirm UI · examples/swift · 배포 저장소 생성
 6. L4 skill (대상 프로젝트에 표시 추가 자동화)
 ```
 
