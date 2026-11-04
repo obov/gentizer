@@ -1,6 +1,6 @@
 # gentizer — 기존 앱 UI를 에이전트가 제어하게 만드는 A2UI 바인딩 (기획)
 
-상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현. HTML 속성 · Swift · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
+상태: L2 core · React hooks · A2UI RPC 브리지 · AG-UI 어댑터 · conformance 케이스 (TS) 구현, Swift 패키지 골격 (conformance 전체 skip). HTML 속성 · Swift core · skill 없음. 2026-11-04 대화(agent-loader 세션 a7a2ce46)에서 정리한 내용.
 
 ## 목표
 
@@ -76,7 +76,7 @@ saveBtn.addEventListener("click", () => agent.trigger("form_saved", { id }))  //
 | D6 | 기준 A2UI 버전 | v1.0 RC (`callRendererFunction` 필요). v0.9 플랫폼은 상태 바인딩까지만 |
 | D7 | Swift 기반 | 공식 `A2UISwiftUI` (branch 지정). 배포 태그 생기면 전환 |
 | D8 | 첫 전송 어댑터 | AG-UI. agent-loader 는 어댑터 대신 L4 skill 로 연동, 상호 의존 없음 |
-| D9 | 저장소 배치 · 테스트 | 루트에 `package.json` · `Package.swift`, 언어별 폴더. 언어 공통 동작은 `conformance/` JSON 케이스 (상세 `specs/conformance.md`) |
+| D9 | 저장소 배치 · 테스트 | 개발은 이 저장소 하나 (루트 `package.json` · 언어별 폴더). Swift 는 `swift/Package.swift` 를 배포 저장소 `gentizer-swift` 로 export (gnam export). 언어 공통 동작은 `conformance/` JSON 케이스 (상세 `specs/conformance.md` · `specs/swift.md`) |
 
 D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만 해당.
 
@@ -134,7 +134,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 2. (완료) L2 core manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임 (`packages/core`)
 3. (일부) React hooks (`packages/react`) · A2UI RPC 브리지 (`packages/a2ui`). 남음: data-agent-* 속성 · surface 렌더링 · Next.js ssr:false 래퍼
 4. (완료) 전송 어댑터: AG-UI (`packages/ag-ui`). agent-loader 연동은 6 의 skill 로 (상호 의존 없음)
-5. Swift 바인딩
+5. (일부) Swift: 골격 · 배포 설정 · conformance 실행기 (`swift/`). 남음: core 이식 · SwiftUI 바인딩 · 배포 저장소 생성
 6. L4 skill (대상 프로젝트에 표시 추가 자동화)
 ```
 
