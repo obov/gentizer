@@ -1,0 +1,392 @@
+{
+  "suite": "runtime",
+  "description": "등록 · 해제 · manifest · readState (specs/core.md '런타임')",
+  "cases": [
+    {
+      "name": "등록 · 해제 · 재등록",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": null
+          },
+          "handle": "h1"
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {
+              "cart_add": {
+                "description": "담기"
+              }
+            },
+            "state": {},
+            "views": {}
+          }
+        },
+        {
+          "op": "unregister",
+          "handle": "h1"
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {},
+            "state": {},
+            "views": {}
+          }
+        },
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {
+              "cart_add": {
+                "description": "담기"
+              }
+            },
+            "state": {},
+            "views": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "등록 중 같은 이름은 DUPLICATE_NAME",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "cart",
+          "def": {
+            "description": "장바구니"
+          },
+          "value": []
+        },
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "cart",
+          "def": {
+            "description": "또"
+          },
+          "value": [],
+          "expectError": "DUPLICATE_NAME"
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {},
+            "state": {
+              "cart": {
+                "description": "장바구니"
+              }
+            },
+            "views": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "다른 구역 같은 이름 허용",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "cart",
+          "def": {
+            "description": "a"
+          }
+        },
+        {
+          "op": "register",
+          "kind": "view",
+          "name": "cart",
+          "def": {
+            "description": "b"
+          }
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {},
+            "state": {
+              "cart": {
+                "description": "a"
+              }
+            },
+            "views": {
+              "cart": {
+                "description": "b"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "이전 해제 함수는 재등록을 지우지 않음",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "view",
+          "name": "cart",
+          "def": {
+            "description": "a"
+          },
+          "handle": "old"
+        },
+        {
+          "op": "unregister",
+          "handle": "old"
+        },
+        {
+          "op": "register",
+          "kind": "view",
+          "name": "cart",
+          "def": {
+            "description": "b"
+          }
+        },
+        {
+          "op": "unregister",
+          "handle": "old"
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {},
+            "state": {},
+            "views": {
+              "cart": {
+                "description": "b"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "manifest 등록 순서",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "b",
+          "def": {
+            "description": "b"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "a"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "z",
+          "def": {
+            "description": "s"
+          }
+        },
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "y",
+          "def": {
+            "description": "s"
+          }
+        },
+        {
+          "op": "register",
+          "kind": "view",
+          "name": "v",
+          "def": {
+            "description": "v"
+          }
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {
+              "a": {
+                "description": "a"
+              },
+              "b": {
+                "description": "b"
+              }
+            },
+            "state": {
+              "y": {
+                "description": "s"
+              },
+              "z": {
+                "description": "s"
+              }
+            },
+            "views": {
+              "v": {
+                "description": "v"
+              }
+            }
+          },
+          "expectOrder": {
+            "actions": [
+              "b",
+              "a"
+            ],
+            "state": [
+              "z",
+              "y"
+            ],
+            "views": [
+              "v"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "해제 후 다시 등록하면 순서 끝으로",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          },
+          "handle": "ha"
+        },
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "b",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "unregister",
+          "handle": "ha"
+        },
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "manifest",
+          "expect": {
+            "version": "gentizer/0.1",
+            "actions": {
+              "a": {
+                "description": "x"
+              },
+              "b": {
+                "description": "x"
+              }
+            },
+            "state": {},
+            "views": {}
+          },
+          "expectOrder": {
+            "actions": [
+              "b",
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "readState 값 · 미등록 null",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "cart",
+          "def": {
+            "description": "장바구니"
+          },
+          "value": [
+            {
+              "id": 1
+            }
+          ]
+        },
+        {
+          "op": "register",
+          "kind": "state",
+          "name": "empty",
+          "def": {
+            "description": "없음"
+          }
+        },
+        {
+          "op": "readState",
+          "name": "cart",
+          "expect": [
+            {
+              "id": 1
+            }
+          ]
+        },
+        {
+          "op": "readState",
+          "name": "empty",
+          "expect": null
+        },
+        {
+          "op": "readState",
+          "name": "none",
+          "expect": null
+        }
+      ]
+    }
+  ]
+}

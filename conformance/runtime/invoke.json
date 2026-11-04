@@ -1,0 +1,297 @@
+{
+  "suite": "runtime",
+  "description": "invoke 순서와 오류 코드 (specs/core.md '런타임')",
+  "cases": [
+    {
+      "name": "NOT_FOUND",
+      "steps": [
+        {
+          "op": "invoke",
+          "name": "nope",
+          "expect": {
+            "ok": false,
+            "code": "NOT_FOUND"
+          }
+        }
+      ]
+    },
+    {
+      "name": "해제된 액션 NOT_FOUND",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          },
+          "handle": "h"
+        },
+        {
+          "op": "unregister",
+          "handle": "h"
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": false,
+            "code": "NOT_FOUND"
+          }
+        }
+      ]
+    },
+    {
+      "name": "INVALID_ARGS: object 아님",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": []
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": "x"
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": null
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": 1
+        }
+      ]
+    },
+    {
+      "name": "INVALID_ARGS: required 누락",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "filter_set",
+          "def": {
+            "description": "x",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            }
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "filter_set",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": {}
+        },
+        {
+          "op": "invoke",
+          "name": "filter_set",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": {
+            "other": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "required 이외 값은 검증하지 않음",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "filter_set",
+          "def": {
+            "description": "x",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            }
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "filter_set",
+          "expect": {
+            "ok": true,
+            "value": {
+              "category": 1
+            }
+          },
+          "args": {
+            "category": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "실행 결과 · args 생략은 {}",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "echo",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "echo",
+          "expect": {
+            "ok": true,
+            "value": {
+              "a": [
+                1,
+                "b"
+              ]
+            }
+          },
+          "args": {
+            "a": [
+              1,
+              "b"
+            ]
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "echo",
+          "expect": {
+            "ok": true,
+            "value": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "returns 값 그대로 · null",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "n",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": 42
+          }
+        },
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "z",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "n",
+          "expect": {
+            "ok": true,
+            "value": 42
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "z",
+          "expect": {
+            "ok": true,
+            "value": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "EXECUTION_ERROR",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "boom",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "throws": "boom"
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "boom",
+          "expect": {
+            "ok": false,
+            "code": "EXECUTION_ERROR"
+          }
+        }
+      ]
+    }
+  ]
+}

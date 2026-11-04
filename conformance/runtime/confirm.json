@@ -1,0 +1,209 @@
+{
+  "suite": "runtime",
+  "description": "confirm 승인 차단 (specs/core.md '런타임')",
+  "cases": [
+    {
+      "name": "confirm approve",
+      "confirm": "approve",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "pay",
+          "expect": {
+            "ok": true,
+            "value": "paid"
+          },
+          "args": {
+            "amount": 1
+          },
+          "expectConfirm": {
+            "name": "pay",
+            "description": "결제",
+            "args": {
+              "amount": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "confirm deny",
+      "confirm": "deny",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "pay",
+          "expect": {
+            "ok": false,
+            "code": "DENIED"
+          },
+          "args": {
+            "amount": 1
+          },
+          "expectConfirm": {
+            "name": "pay",
+            "description": "결제",
+            "args": {
+              "amount": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "confirm throw",
+      "confirm": "throw",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "pay",
+          "expect": {
+            "ok": false,
+            "code": "DENIED"
+          },
+          "args": {
+            "amount": 1
+          },
+          "expectConfirm": {
+            "name": "pay",
+            "description": "결제",
+            "args": {
+              "amount": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "confirm absent",
+      "confirm": "absent",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "pay",
+          "expect": {
+            "ok": false,
+            "code": "DENIED"
+          },
+          "args": {
+            "amount": 1
+          },
+          "expectConfirm": null
+        }
+      ]
+    },
+    {
+      "name": "confirm 아닌 액션은 콜백 미호출",
+      "confirm": "deny",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "a",
+          "def": {
+            "description": "x"
+          },
+          "behavior": {
+            "returns": 1
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "a",
+          "expect": {
+            "ok": true,
+            "value": 1
+          },
+          "expectConfirm": null
+        }
+      ]
+    },
+    {
+      "name": "args 검증 실패 시 콜백 미호출",
+      "confirm": "approve",
+      "steps": [
+        {
+          "op": "register",
+          "kind": "action",
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true,
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            }
+          },
+          "behavior": {
+            "returns": null
+          }
+        },
+        {
+          "op": "invoke",
+          "name": "pay",
+          "expect": {
+            "ok": false,
+            "code": "INVALID_ARGS"
+          },
+          "args": {},
+          "expectConfirm": null
+        }
+      ]
+    }
+  ]
+}
