@@ -108,7 +108,7 @@ TEXT_MESSAGE_END · TOOL_CALL_END · REASONING_START · REASONING_MESSAGE_END ·
 RUN_STARTED · RUN_FINISHED · STEP_* · RAW · CUSTOM   메시지 변화 없음
 ```
 
-- `AGUIMessage` 는 activity 메시지의 object content (`activityContent` · `activityType`) 와 `encryptedValue` 를 가진다. JSON 키는 AG-UI 와 같음 (activity 의 content = object)
+- `AGUIMessage` 의 JSON `content` 가 문자열이면 `content`, 그 외 (activity object · multimodal 배열) 면 `structuredContent`. 인코딩은 같은 `content` 키로 되돌린다. `activityType` · `encryptedValue` 필드 포함
 
 실행 취소:
 

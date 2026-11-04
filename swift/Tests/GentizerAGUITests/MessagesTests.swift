@@ -18,6 +18,15 @@ struct MessagesTests {
         #expect(messages[2].content == "안녕")
     }
 
+    @Test func structuredContentRoundTrip() throws {
+        let json = #"[{"id":"p1","role":"activity","activityType":"PLAN","content":{"steps":["a"]}},{"id":"r1","role":"reasoning","content":"t","encryptedValue":"E"}]"#
+        let messages = try JSONDecoder().decode([AGUIMessage].self, from: Data(json.utf8))
+        #expect(messages[0].structuredContent == ["steps": ["a"]] && messages[0].content == nil && messages[0].activityType == "PLAN")
+        #expect(messages[1].content == "t" && messages[1].encryptedValue == "E")
+        let back = try JSONValue(encoding: messages)
+        #expect(back == (try JSONDecoder().decode(JSONValue.self, from: Data(json.utf8))))
+    }
+
     @Test func integersSerializeWithoutFraction() {
         #expect(jsonString([1, 1.5, "a/b"]) == #"[1,1.5,"a/b"]"#)
         #expect(jsonString(["b": 1, "a": nil]) == #"{"a":null,"b":1}"#)

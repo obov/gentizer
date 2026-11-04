@@ -48,6 +48,7 @@ struct AGUIEventState {
     var runError: AGUIError?
     private var chunkMessageId: String?
     private var chunkToolCallId: String?
+    private var chunkReasoningId: String?
 
     init(messages: [AGUIMessage], state: JSONValue) {
         self.messages = messages
@@ -94,10 +95,69 @@ struct AGUIEventState {
             if let snapshot = try? e["messages"]?.decode(as: [AGUIMessage].self) { messagesSnapshot(snapshot) }
         case "STATE_SNAPSHOT":
             state = e["snapshot"] ?? .null
+        case "STATE_DELTA":
+            if let next = applyJSONPatch(state, e["delta"] ?? .null) { state = next }
+        case "REASONING_MESSAGE_START":
+            if let id = e["messageId"]?.stringValue { reasoningStart(id) }
+        case "REASONING_MESSAGE_CONTENT":
+            if let id = e["messageId"]?.stringValue { reasoningContent(id, e["delta"]?.stringValue ?? "") }
+        case "REASONING_MESSAGE_CHUNK":
+            guard let id = e["messageId"]?.stringValue ?? chunkReasoningId else { return }
+            if id != chunkReasoningId { reasoningStart(id) }
+            chunkReasoningId = id
+            if let delta = e["delta"]?.stringValue { reasoningContent(id, delta) }
+        case "REASONING_ENCRYPTED_VALUE":
+            if let entity = e["entityId"]?.stringValue, let value = e["encryptedValue"]?.stringValue {
+                encrypted(entity, value, toolCall: e["subtype"]?.stringValue == "tool-call")
+            }
+        case "ACTIVITY_SNAPSHOT":
+            if let id = e["messageId"]?.stringValue, let type = e["activityType"]?.stringValue {
+                activitySnapshot(id, type: type, content: e["content"] ?? [:], replace: e["replace"]?.boolValue ?? true)
+            }
+        case "ACTIVITY_DELTA":
+            if let id = e["messageId"]?.stringValue,
+               let i = messages.firstIndex(where: { $0.id == id }), messages[i].role == "activity",
+               let next = applyJSONPatch(messages[i].structuredContent ?? [:], e["patch"] ?? []) {
+                messages[i].structuredContent = next
+                if let type = e["activityType"]?.stringValue { messages[i].activityType = type }
+            }
         case "RUN_ERROR":
             runError = .run(message: e["message"]?.stringValue ?? "", code: e["code"]?.stringValue)
         default:
             break
+        }
+    }
+
+    private mutating func reasoningStart(_ id: String) {
+        guard !messages.contains(where: { $0.id == id }) else { return }
+        messages.append(AGUIMessage(id: id, role: "reasoning", content: ""))
+    }
+
+    private mutating func reasoningContent(_ id: String, _ delta: String) {
+        guard let i = messages.firstIndex(where: { $0.id == id }), messages[i].role != "activity" else { return }
+        messages[i].content = (messages[i].content ?? "") + delta
+    }
+
+    private mutating func encrypted(_ entity: String, _ value: String, toolCall: Bool) {
+        if toolCall {
+            if let (i, j) = toolIndex(entity), messages[i].role == "assistant" { messages[i].toolCalls![j].encryptedValue = value }
+        } else if let i = messages.firstIndex(where: { $0.id == entity }), messages[i].role != "activity" {
+            messages[i].encryptedValue = value
+        }
+    }
+
+    private mutating func activitySnapshot(_ id: String, type: String, content: JSONValue, replace: Bool) {
+        let fresh = AGUIMessage(id: id, role: "activity", activityType: type, structuredContent: content)
+        guard let i = messages.firstIndex(where: { $0.id == id }) else {
+            messages.append(fresh)
+            return
+        }
+        guard replace else { return }
+        if messages[i].role == "activity" {
+            messages[i].activityType = type
+            messages[i].structuredContent = content
+        } else {
+            messages[i] = fresh
         }
     }
 
@@ -156,9 +216,16 @@ struct AGUIEventState {
         }
     }
 
+    /// snapshot 에 activity · reasoning 이 하나도 없으면 기존 activity · reasoning 은 유지
     private mutating func messagesSnapshot(_ snapshot: [AGUIMessage]) {
         let byId = Dictionary(snapshot.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
-        messages = messages.compactMap { byId[$0.id] }
+        let keepActivity = !snapshot.contains { $0.role == "activity" }
+        let keepReasoning = !snapshot.contains { $0.role == "reasoning" }
+        messages = messages.compactMap { m in
+            if let s = byId[m.id] { return s }
+            if (m.role == "activity" && keepActivity) || (m.role == "reasoning" && keepReasoning) { return m }
+            return nil
+        }
         let kept = Set(messages.map(\.id))
         messages += snapshot.filter { !kept.contains($0.id) }
     }
