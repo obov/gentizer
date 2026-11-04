@@ -7,7 +7,7 @@
     "build": "npm run build -w @gentizer/core -w @gentizer/a2ui -w @gentizer/ag-ui -w @gentizer/react"
   },
   "devDependencies": {
-    "@obov/gnam": "^0.6.0"
+    "@obov/gnam": "^0.8.0"
   },
   "workspaces": [
     "packages/*",
