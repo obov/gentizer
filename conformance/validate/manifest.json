@@ -1,0 +1,984 @@
+{
+  "suite": "validate",
+  "description": "validateManifest 규칙 (specs/core.md 'manifest' · '검증')",
+  "cases": [
+    {
+      "name": "정상 manifest",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "object 아님",
+      "manifest": null,
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "배열",
+      "manifest": [],
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "version 불일치",
+      "manifest": {
+        "version": "gentizer/9",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "version"
+        ]
+      }
+    },
+    {
+      "name": "구역 누락",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "views"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: Cart_add",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "Cart_add": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.Cart_add"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: cart.add",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart.add": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.cart.add"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: cart-add",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart-add": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.cart-add"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: 1cart",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "1cart": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.1cart"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: _cart",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "_cart": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions._cart"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: cart add",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart add": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.cart add"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 위반: 65자",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        ]
+      }
+    },
+    {
+      "name": "이름 규칙 통과: cart",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "이름 규칙 통과: cart_add",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "이름 규칙 통과: list_v2",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "list_v2": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "이름 규칙 통과: 64자",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+            "description": "x"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "description 공백",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": " "
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "views.cart.description"
+        ]
+      }
+    },
+    {
+      "name": "description 누락",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {}
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "views.cart.description"
+        ]
+      }
+    },
+    {
+      "name": "정의가 object 아님",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": "x"
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "views.cart"
+        ]
+      }
+    },
+    {
+      "name": "input 최상위 object 아님",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "input": {
+              "type": "string"
+            }
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.a.input"
+        ]
+      }
+    },
+    {
+      "name": "returns 허용값 밖",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "validationResult"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.a.returns"
+        ]
+      }
+    },
+    {
+      "name": "returns 허용: string",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "string"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: number",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "number"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: boolean",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: array",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "array"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: object",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "object"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: any",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "any"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "returns 허용: void",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "returns": "void"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "confirm boolean 아님",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "confirm": "yes"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니",
+            "schema": {
+              "type": "array"
+            }
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "actions.a.confirm"
+        ]
+      }
+    },
+    {
+      "name": "state.schema object 아님",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "s": {
+            "description": "x",
+            "schema": "array"
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "state.s.schema"
+        ]
+      }
+    },
+    {
+      "name": "빈 구역",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {},
+        "state": {},
+        "views": {}
+      },
+      "expect": {
+        "ok": true
+      }
+    },
+    {
+      "name": "다중 오류 전부 수집",
+      "manifest": {
+        "version": "x",
+        "actions": {
+          "Bad": {
+            "description": ""
+          },
+          "ok": {
+            "description": "x",
+            "input": [],
+            "returns": 1
+          }
+        },
+        "state": {},
+        "views": 3
+      },
+      "expect": {
+        "ok": false,
+        "errorPaths": [
+          "version",
+          "actions.Bad",
+          "actions.Bad.description",
+          "actions.ok.input",
+          "actions.ok.returns",
+          "views"
+        ]
+      }
+    }
+  ]
+}

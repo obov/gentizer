@@ -1,0 +1,231 @@
+{
+  "suite": "catalog",
+  "description": "toA2uiCatalog (specs/core.md 'A2UI v1.0 변환')",
+  "cases": [
+    {
+      "name": "액션 2개 · confirm 1개",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "cart_add": {
+            "description": "장바구니 담기"
+          },
+          "filter_set": {
+            "description": "목록 필터 변경",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "confirm": true,
+            "returns": "boolean"
+          }
+        },
+        "state": {
+          "cart": {
+            "description": "장바구니"
+          }
+        },
+        "views": {
+          "cart": {
+            "description": "장바구니 영역"
+          }
+        }
+      },
+      "catalogId": "https://example.com/shop/catalog.json",
+      "catalog": {
+        "protocolVersion": "1.0",
+        "catalogId": "https://example.com/shop/catalog.json",
+        "functions": {
+          "cart_add": {
+            "type": "object",
+            "description": "장바구니 담기",
+            "returnType": "void",
+            "allowedCallers": "agentOnly",
+            "properties": {
+              "@call": {
+                "const": "cart_add"
+              },
+              "args": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "required": [
+              "@call"
+            ]
+          },
+          "filter_set": {
+            "type": "object",
+            "description": "목록 필터 변경",
+            "returnType": "boolean",
+            "allowedCallers": "agentOnly",
+            "properties": {
+              "@call": {
+                "const": "filter_set"
+              },
+              "args": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "category"
+                ]
+              }
+            },
+            "required": [
+              "@call",
+              "args"
+            ]
+          }
+        },
+        "metadata": {
+          "extensions": {
+            "gentizer": {
+              "confirm": [
+                "filter_set"
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirm 없으면 metadata 생략 · confirm false",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "confirm": false
+          }
+        },
+        "state": {},
+        "views": {}
+      },
+      "catalogId": "x",
+      "catalog": {
+        "protocolVersion": "1.0",
+        "catalogId": "x",
+        "functions": {
+          "a": {
+            "type": "object",
+            "description": "x",
+            "returnType": "void",
+            "allowedCallers": "agentOnly",
+            "properties": {
+              "@call": {
+                "const": "a"
+              },
+              "args": {
+                "type": "object",
+                "properties": {}
+              }
+            },
+            "required": [
+              "@call"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "input 에 required 없으면 args 선택",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "a": {
+            "description": "x",
+            "input": {
+              "type": "object",
+              "properties": {
+                "n": {
+                  "type": "number"
+                }
+              }
+            },
+            "returns": "number"
+          }
+        },
+        "state": {},
+        "views": {}
+      },
+      "catalogId": "x",
+      "catalog": {
+        "protocolVersion": "1.0",
+        "catalogId": "x",
+        "functions": {
+          "a": {
+            "type": "object",
+            "description": "x",
+            "returnType": "number",
+            "allowedCallers": "agentOnly",
+            "properties": {
+              "@call": {
+                "const": "a"
+              },
+              "args": {
+                "type": "object",
+                "properties": {
+                  "n": {
+                    "type": "number"
+                  }
+                }
+              }
+            },
+            "required": [
+              "@call"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "state · views 는 catalog 에 없음",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {},
+        "state": {
+          "s": {
+            "description": "x"
+          }
+        },
+        "views": {
+          "v": {
+            "description": "y"
+          }
+        }
+      },
+      "catalogId": "x",
+      "catalog": {
+        "protocolVersion": "1.0",
+        "catalogId": "x",
+        "functions": {}
+      }
+    },
+    {
+      "name": "잘못된 manifest",
+      "manifest": {
+        "version": "gentizer/0.1",
+        "actions": {
+          "Bad": {
+            "description": "x"
+          }
+        },
+        "state": {},
+        "views": {}
+      },
+      "catalogId": "x",
+      "error": "INVALID_MANIFEST"
+    }
+  ]
+}

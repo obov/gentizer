@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/obov/gentizer/conformance/schema.json",
+  "title": "gentizer conformance case file",
+  "description": "specs/conformance.md 의 케이스 파일 형식",
+  "type": "object",
+  "required": ["suite", "cases"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "suite": { "enum": ["validate", "catalog", "runtime", "ag-ui", "a2ui"] },
+    "description": { "type": "string" },
+    "cases": { "type": "array", "minItems": 1 }
+  },
+  "allOf": [
+    { "if": { "properties": { "suite": { "const": "validate" } } }, "then": { "properties": { "cases": { "items": { "$ref": "#/$defs/validateCase" } } } } },
+    { "if": { "properties": { "suite": { "const": "catalog" } } }, "then": { "properties": { "cases": { "items": { "$ref": "#/$defs/catalogCase" } } } } },
+    { "if": { "properties": { "suite": { "const": "runtime" } } }, "then": { "properties": { "cases": { "items": { "$ref": "#/$defs/runtimeCase" } } } } },
+    { "if": { "properties": { "suite": { "const": "ag-ui" } } }, "then": { "properties": { "cases": { "items": { "$ref": "#/$defs/agUiCase" } } } } },
+    { "if": { "properties": { "suite": { "const": "a2ui" } } }, "then": { "properties": { "cases": { "items": { "$ref": "#/$defs/a2uiCase" } } } } }
+  ],
+  "$defs": {
+    "name": { "type": "string", "minLength": 1 },
+    "caseName": { "type": "string", "minLength": 1 },
+    "confirm": { "enum": ["approve", "deny", "throw", "absent"] },
+    "behavior": {
+      "oneOf": [
+        { "type": "object", "required": ["returns"], "additionalProperties": false, "properties": { "returns": true } },
+        { "type": "object", "required": ["throws"], "additionalProperties": false, "properties": { "throws": { "type": "string" } } },
+        { "type": "object", "required": ["echoArgs"], "additionalProperties": false, "properties": { "echoArgs": { "const": true } } }
+      ]
+    },
+    "actionDecl": {
+      "type": "object",
+      "required": ["name", "def", "behavior"],
+      "additionalProperties": false,
+      "properties": { "name": { "$ref": "#/$defs/name" }, "def": { "type": "object" }, "behavior": { "$ref": "#/$defs/behavior" } }
+    },
+    "stateDecl": {
+      "type": "object",
+      "required": ["name", "def"],
+      "additionalProperties": false,
+      "properties": { "name": { "$ref": "#/$defs/name" }, "def": { "type": "object" }, "value": true }
+    },
+    "invokeExpect": {
+      "oneOf": [
+        { "type": "object", "required": ["ok", "value"], "additionalProperties": false, "properties": { "ok": { "const": true }, "value": true } },
+        {
+          "type": "object",
+          "required": ["ok", "code"],
+          "additionalProperties": false,
+          "properties": { "ok": { "const": false }, "code": { "enum": ["NOT_FOUND", "INVALID_ARGS", "DENIED", "EXECUTION_ERROR"] } }
+        }
+      ]
+    },
+    "validateCase": {
+      "type": "object",
+      "required": ["name", "manifest", "expect"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/caseName" },
+        "manifest": true,
+        "expect": {
+          "oneOf": [
+            { "type": "object", "required": ["ok"], "additionalProperties": false, "properties": { "ok": { "const": true } } },
+            {
+              "type": "object",
+              "required": ["ok", "errorPaths"],
+              "additionalProperties": false,
+              "properties": { "ok": { "const": false }, "errorPaths": { "type": "array", "items": { "type": "string" }, "minItems": 1 } }
+            }
+          ]
+        }
+      }
+    },
+    "catalogCase": {
+      "type": "object",
+      "required": ["name", "manifest", "catalogId"],
+      "additionalProperties": false,
+      "oneOf": [{ "required": ["catalog"] }, { "required": ["error"] }],
+      "properties": {
+        "name": { "$ref": "#/$defs/caseName" },
+        "manifest": true,
+        "catalogId": { "type": "string" },
+        "catalog": { "type": "object" },
+        "error": { "const": "INVALID_MANIFEST" }
+      }
+    },
+    "runtimeStep": {
+      "type": "object",
+      "required": ["op"],
+      "oneOf": [
+        {
+          "required": ["op", "kind", "name", "def"],
+          "additionalProperties": false,
+          "properties": {
+            "op": { "const": "register" },
+            "kind": { "enum": ["action", "state", "view"] },
+            "name": { "$ref": "#/$defs/name" },
+            "def": { "type": "object" },
+            "behavior": { "$ref": "#/$defs/behavior" },
+            "value": true,
+            "handle": { "type": "string" },
+            "expectError": { "const": "DUPLICATE_NAME" }
+          }
+        },
+        {
+          "required": ["op", "handle"],
+          "additionalProperties": false,
+          "properties": { "op": { "const": "unregister" }, "handle": { "type": "string" } }
+        },
+        {
+          "required": ["op", "name", "expect"],
+          "additionalProperties": false,
+          "properties": {
+            "op": { "const": "invoke" },
+            "name": { "type": "string" },
+            "args": true,
+            "expect": { "$ref": "#/$defs/invokeExpect" },
+            "expectConfirm": {
+              "oneOf": [
+                { "type": "null" },
+                {
+                  "type": "object",
+                  "required": ["name", "description", "args"],
+                  "additionalProperties": false,
+                  "properties": { "name": { "type": "string" }, "description": { "type": "string" }, "args": { "type": "object" } }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "required": ["op", "expect"],
+          "additionalProperties": false,
+          "properties": {
+            "op": { "const": "manifest" },
+            "expect": { "type": "object" },
+            "expectOrder": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "actions": { "type": "array", "items": { "type": "string" } },
+                "state": { "type": "array", "items": { "type": "string" } },
+                "views": { "type": "array", "items": { "type": "string" } }
+              }
+            }
+          }
+        },
+        {
+          "required": ["op", "name", "expect"],
+          "additionalProperties": false,
+          "properties": { "op": { "const": "readState" }, "name": { "type": "string" }, "expect": true }
+        }
+      ]
+    },
+    "runtimeCase": {
+      "type": "object",
+      "required": ["name", "steps"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/caseName" },
+        "confirm": { "$ref": "#/$defs/confirm" },
+        "steps": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/runtimeStep" } }
+      }
+    },
+    "agUiCase": {
+      "type": "object",
+      "required": ["name", "actions", "op", "expect"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/caseName" },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/actionDecl" } },
+        "states": { "type": "array", "items": { "$ref": "#/$defs/stateDecl" } },
+        "confirm": { "$ref": "#/$defs/confirm" },
+        "op": { "enum": ["tools", "context", "runFrontendTools"] },
+        "messages": { "type": "array", "items": { "type": "object" } },
+        "expect": { "type": "array" }
+      },
+      "if": { "properties": { "op": { "const": "runFrontendTools" } } },
+      "then": {
+        "required": ["messages"],
+        "properties": {
+          "expect": {
+            "items": {
+              "type": "object",
+              "required": ["toolCallId", "content"],
+              "additionalProperties": false,
+              "properties": { "toolCallId": { "type": "string" }, "content": true, "errorCode": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "a2uiCase": {
+      "type": "object",
+      "required": ["name", "actions", "catalogId", "message", "expect"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/caseName" },
+        "actions": { "type": "array", "items": { "$ref": "#/$defs/actionDecl" } },
+        "confirm": { "$ref": "#/$defs/confirm" },
+        "catalogId": { "type": "string" },
+        "message": { "type": "object" },
+        "expect": {
+          "oneOf": [
+            { "type": "object", "required": ["value"], "additionalProperties": false, "properties": { "value": true } },
+            {
+              "type": "object",
+              "required": ["errorCode"],
+              "additionalProperties": false,
+              "properties": {
+                "errorCode": { "enum": ["INVALID_FUNCTION_CALL", "EXECUTION_ERROR"] },
+                "messagePrefix": { "type": "string" }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
