@@ -13,6 +13,20 @@ final class Seen {
     var buy: (() -> Void)?
 }
 
+/// body 평가 (GPU 래스터 없이). ImageRenderer 는 GPU 없는 CI runner 에서 Metal assertion 으로 중단
+@MainActor
+private func layout(_ view: some View) {
+    #if os(macOS)
+    let hosting = NSHostingView(rootView: view.frame(width: 200, height: 100))
+    hosting.frame = .init(x: 0, y: 0, width: 200, height: 100)
+    hosting.layoutSubtreeIfNeeded()
+    #else
+    let controller = UIHostingController(rootView: view.frame(width: 200, height: 100))
+    controller.view.frame = .init(x: 0, y: 0, width: 200, height: 100)
+    controller.view.layoutIfNeeded()
+    #endif
+}
+
 @MainActor
 struct AppComponentTests {
     private func card(_ seen: Seen) -> A2UIAppComponent {
@@ -55,8 +69,7 @@ struct AppComponentTests {
         #expect(root.type == "ProductCard")
 
         // SurfaceView 가 앱 builder 를 호출
-        let renderer = ImageRenderer(content: A2UISurfaceView(host: h, surfaceID: "s1").frame(width: 200, height: 100))
-        _ = renderer.cgImage
+        layout(A2UISurfaceView(host: h, surfaceID: "s1"))
         #expect(seen.built > 0)
         #expect(seen.props == ["name": "러닝화", "price": "59000.0", "soldOut": "false", "hasBadge": "false"])
         seen.buy?()
@@ -91,7 +104,7 @@ struct AppComponentTests {
         let h = try host([text], sent: Sent())
         await h.process(message: try json(#"{"version":"1.0","createSurface":{"surfaceId":"s1","catalogId":"cat#components"}}"#))
         await h.process(message: try json(#"{"version":"1.0","updateComponents":{"surfaceId":"s1","components":[{"id":"root","component":"Text","text":"x"}]}}"#))
-        _ = ImageRenderer(content: A2UISurfaceView(host: h, surfaceID: "s1").frame(width: 100, height: 50)).cgImage
+        layout(A2UISurfaceView(host: h, surfaceID: "s1"))
         #expect(seen.built > 0)
         #expect(try host([], sent: Sent()).componentCatalog() == nil)
     }
