@@ -69,6 +69,20 @@ struct ValidateConformance {
     }
 }
 
+@Suite("conformance catalog")
+struct CatalogConformance {
+    @Test(arguments: try cases("catalog"))
+    func run(_ c: LoadedCase) throws {
+        let catalogId = try #require(c.value["catalogId"]?.stringValue)
+        let build = { try toA2uiCatalog(Manifest(json: c.value["manifest"] ?? .null), catalogId: catalogId) }
+        if c.value["error"] == "INVALID_MANIFEST" {
+            #expect(throws: InvalidManifestError.self) { try build() }
+        } else {
+            #expect(try build() == c.value["catalog"])
+        }
+    }
+}
+
 @Suite("conformance 미구현")
 struct SkippedConformance {
     @Test("ag-ui", .disabled("Swift AG-UI 어댑터 미구현")) func agUi() {}
