@@ -7,6 +7,7 @@
 <파일명>.md  <한 줄 설명>
 core.md      L2 manifest 스키마 · 검증 · A2UI v1.0 catalog 변환 · 런타임
 react.md     React · Next.js 바인딩 (hooks)
+dom.md       HTML data-agent-* 속성 바인딩
 a2ui.md      A2UI v1.0 callRendererFunction → 런타임 브리지 (웹)
 ag-ui.md     AG-UI 전송 어댑터 (frontend tool · context)
 conformance.md  언어 공통 JSON 케이스 · 저장소 배치
