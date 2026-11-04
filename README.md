@@ -74,7 +74,7 @@ saveBtn.addEventListener("click", () => agent.trigger("form_saved", { id }))  //
 | D3 | 생성형 UI | A2UI surface 사용으로 범위 포함 |
 | D5 | 저장소 · 라이선스 | `~/Dev/gentizer` 독립 저장소, Apache-2.0 |
 | D6 | 기준 A2UI 버전 | v1.0 RC (`callRendererFunction` 필요). v0.9 플랫폼은 상태 바인딩까지만 |
-| D7 | Swift 기반 | 공식 `A2UISwiftUI` (branch 지정). 배포 태그 생기면 전환 |
+| D7 | Swift 기반 | `A2UISwiftUI` 를 fork `obov/a2ui` 의 semver 태그 (0.1.0) 로 의존. upstream 이 SwiftPM 태그를 붙이면 전환 (상세 `specs/a2ui.md`) |
 | D8 | 첫 전송 어댑터 | AG-UI. agent-loader 는 어댑터 대신 L4 skill 로 연동, 상호 의존 없음 |
 | D9 | 저장소 배치 · 테스트 | 개발은 이 저장소 하나 (루트 `package.json` · 언어별 폴더). Swift 는 `swift/Package.swift` 를 배포 저장소 `gentizer-swift` 로 export (gnam export). 언어 공통 동작은 `conformance/` JSON 케이스 (상세 `specs/conformance.md` · `specs/swift.md`) |
 
@@ -86,7 +86,7 @@ D4(provider 순서: claude 먼저 · codex 2차)는 agent-loader 어댑터에만
 |---|---|---|
 | React | `@a2ui/react` 0.15 | 0.x라 호환 깨짐 잦음 → 버전 고정 |
 | Next.js | 같은 패키지 | SSR 버그(#3158 · #2080) open → `ssr:false` 래퍼 내장 |
-| Swift | 공식 `A2UISwiftUI` | 배포 태그 없음 → SwiftPM branch 지정. 커뮤니티 BBC6BAE9/a2ui-swift는 v0.9.1까지 |
+| Swift | 공식 `A2UISwiftUI` | upstream 태그가 SwiftPM 형식 아님 → fork `obov/a2ui` 에 semver 태그. 커뮤니티 BBC6BAE9/a2ui-swift는 v0.9.1까지 |
 | Vue (2차) | 커뮤니티 `a2ui-vue` | |
 | Kotlin (2차) | `androidx.a2ui` alpha | v0.9.1만 지원 → 앱 액션 호출 경로 없음 (R7) |
 | RN (2차) | 커뮤니티 구현 1개 | 1인 유지 |
