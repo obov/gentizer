@@ -48,4 +48,4 @@ runFrontendTools(runtime, messages) async             TS 와 같은 규칙 (대�
 
 - 문자열 JSON (`content` · context `value`) 은 키 정렬 직렬화
 - conformance `ag-ui` suite 를 Swift 실행기에서도 통과
-- 미구현: 전체. `runWithFrontendTools` (에이전트 연결) 는 AG-UI Swift 클라이언트 선택 (README Q3) 후
+- 미구현: `runWithFrontendTools` (에이전트 연결). AG-UI Swift 클라이언트 선택 (README Q3) 후
