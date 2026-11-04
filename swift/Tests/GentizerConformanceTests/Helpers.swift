@@ -1,3 +1,4 @@
+import Foundation
 @testable import Gentizer
 
 struct BehaviorError: Error, CustomStringConvertible {
@@ -50,4 +51,21 @@ func register(_ rt: AgentRuntime, _ step: JSONValue) throws -> @MainActor () -> 
     default:
         return try rt.view(name, ViewDef(validated: def))
     }
+}
+
+/// ag-ui · a2ui suite 의 actions · states 선언 등록
+@MainActor
+func registerDecls(_ rt: AgentRuntime, actions: JSONValue?, states: JSONValue?) throws {
+    for a in actions?.arrayValue ?? [] {
+        try rt.action(a["name"]?.stringValue ?? "", ActionDef(validated: a["def"] ?? .null), run: behaviorRun(a["behavior"]))
+    }
+    for s in states?.arrayValue ?? [] {
+        let value = s["value"]
+        try rt.state(s["name"]?.stringValue ?? "", StateDef(validated: s["def"] ?? .null)) { value }
+    }
+}
+
+func parseJSON(_ s: String?) -> JSONValue? {
+    guard let s else { return nil }
+    return try? JSONDecoder().decode(JSONValue.self, from: Data(s.utf8))
 }

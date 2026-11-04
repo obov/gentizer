@@ -1,10 +1,10 @@
 import Foundation
 @testable import Gentizer
+import GentizerAGUI
 import Testing
 
 /// suite → skip 사유. 구현하면 지우고 아래 실행 테스트를 채운다
 let skippedSuites: [String: String] = [
-    "ag-ui": "Swift AG-UI 어댑터 미구현",
     "a2ui": "Swift A2UI 브리지 미구현",
 ]
 
@@ -140,8 +140,44 @@ struct RuntimeConformance {
     }
 }
 
+@Suite("conformance ag-ui")
+@MainActor
+struct AgUiConformance {
+    @Test(arguments: try cases("ag-ui"))
+    func run(_ c: LoadedCase) async throws {
+        let recorder = ConfirmRecorder()
+        let rt = recorder.makeRuntime(c.value["confirm"]?.stringValue)
+        try registerDecls(rt, actions: c.value["actions"], states: c.value["states"])
+        let expect = c.value["expect"]?.arrayValue ?? []
+        switch c.value["op"]?.stringValue {
+        case "tools":
+            #expect(try JSONValue(encoding: toAGUITools(rt.manifest())) == .array(expect))
+        case "context":
+            let got = toAGUIContext(rt).map { ["description": .string($0.description), "value": parseJSON($0.value) ?? "<invalid>"] as JSONValue }
+            #expect(got == expect)
+        case "runFrontendTools":
+            let messages = try (c.value["messages"] ?? []).decode(as: [AGUIMessage].self)
+            let out = await runFrontendTools(rt, messages)
+            #expect(out.map(\.id) == out.map { "gentizer-\($0.toolCallId ?? "")" })
+            #expect(out.allSatisfy { $0.role == "tool" })
+            let got: [JSONValue] = out.map { m in
+                var content = parseJSON(m.content) ?? "<invalid>"
+                if let code = content["error"]?["code"] { content = ["error": ["code": code]] }
+                var o: [String: JSONValue] = ["toolCallId": .string(m.toolCallId ?? ""), "content": content]
+                if let e = m.error { o["errorCode"] = .string(String(e.prefix { $0 != ":" })) }
+                return .object(o)
+            }
+            #expect(got == expect)
+            for m in out where m.error != nil {
+                #expect(m.error!.hasPrefix("\(m.error!.prefix { $0 != ":" }): "))
+            }
+        default:
+            Issue.record(Comment(rawValue: "알 수 없는 op"))
+        }
+    }
+}
+
 @Suite("conformance 미구현")
 struct SkippedConformance {
-    @Test("ag-ui", .disabled("Swift AG-UI 어댑터 미구현")) func agUi() {}
     @Test("a2ui", .disabled("Swift A2UI 브리지 미구현")) func a2ui() {}
 }
