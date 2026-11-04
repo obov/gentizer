@@ -1,3 +1,4 @@
 node_modules/
 dist/
 swift/.build/
+swift/Package.resolved
