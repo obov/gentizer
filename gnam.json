@@ -13,7 +13,8 @@
         "path": "swift",
         "repo": "https://github.com/obov/gentizer-swift.git",
         "include": {
-          "conformance": "Tests/Conformance"
+          "conformance": "Tests/Conformance",
+          "LICENSE": "LICENSE"
         },
         "tag": "{version}",
         "version": "swift/VERSION"
