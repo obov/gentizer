@@ -43,7 +43,7 @@ version   swift/VERSION
   1. 저장소 루트 `conformance/` (개발 저장소, `swift/` 의 부모)
   2. 패키지 `Tests/Conformance/` (배포 저장소, include 복사본)
 - 케이스 파일 읽기 규칙은 `specs/conformance.md` '실행기' 와 같다 (suite 불일치 · id 중복 · 케이스 없음 = 실패). schema.json 검사는 TS 실행기만
-- skip 은 suite 단위 사유 또는 케이스 id 단위. 미구현: ag-ui · a2ui suite (skip)
+- skip 은 suite 단위 사유 또는 케이스 id 단위. 현재 skip 없음
 
 ## core API
 
