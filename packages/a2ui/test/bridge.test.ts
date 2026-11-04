@@ -24,38 +24,15 @@ function setup(confirm?: () => boolean) {
   return { rt, bridge: createA2uiBridge(rt, { catalogId }) };
 }
 
-describe("createA2uiBridge", () => {
+// 메시지 처리 규칙은 conformance/a2ui (conformance.test.ts). 여기는 TS 고유 (등록 변경 추적 · dispose)
+describe("createA2uiBridge TS 고유", () => {
   test("catalog() 은 toA2uiCatalog 결과", () => {
     const { rt, bridge } = setup();
     expect(bridge.catalog()).toEqual(toA2uiCatalog(rt.manifest(), { catalogId }));
   });
 
-  test("성공 value", async () => {
-    const { bridge } = setup();
-    const r = await bridge.handle(msg("filter_set", { category: "shoes" }));
-    expect(r.rendererFunctionResponse).toMatchObject({ value: "set shoes" });
-  });
 
-  test("catalogId 생략 시 채움 · 다른 catalogId 오류", async () => {
-    const { bridge } = setup();
-    expect((await bridge.handle(msg("filter_set", { category: "a" }, undefined))).rendererFunctionResponse).toMatchObject({
-      value: "set a",
-    });
-    expect((await bridge.handle(msg("filter_set", { category: "a" }, "https://other"))).rendererFunctionResponse).toMatchObject({
-      error: { code: "INVALID_FUNCTION_CALL" },
-    });
-  });
 
-  test("required 누락은 INVALID_FUNCTION_CALL, 실행 안 함", async () => {
-    const rt = createAgentRuntime();
-    const run = vi.fn();
-    rt.action("filter_set", filterDef, run);
-    const bridge = createA2uiBridge(rt, { catalogId });
-    expect((await bridge.handle(msg("filter_set", {}))).rendererFunctionResponse).toMatchObject({
-      error: { code: "INVALID_FUNCTION_CALL" },
-    });
-    expect(run).not.toHaveBeenCalled();
-  });
 
   test("해제된 액션 INVALID_FUNCTION_CALL · 추가된 액션 실행", async () => {
     const rt = createAgentRuntime();
@@ -70,15 +47,6 @@ describe("createA2uiBridge", () => {
     expect((await bridge.handle(msg("cart_clear"))).rendererFunctionResponse).toMatchObject({ value: "cleared" });
   });
 
-  test("confirm 거부는 EXECUTION_ERROR 'DENIED:'", async () => {
-    const rt = createAgentRuntime({ confirm: () => false });
-    const run = vi.fn();
-    rt.action("pay", { description: "결제", confirm: true }, run);
-    const r = await createA2uiBridge(rt, { catalogId }).handle(msg("pay"));
-    expect(r.rendererFunctionResponse.error?.code).toBe("EXECUTION_ERROR");
-    expect(r.rendererFunctionResponse.error?.message).toMatch(/^DENIED: /);
-    expect(run).not.toHaveBeenCalled();
-  });
 
   test("dispose 후 runtime 구독 해제", () => {
     const rt = createAgentRuntime();

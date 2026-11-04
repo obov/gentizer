@@ -1,0 +1,537 @@
+{
+  "suite": "ag-ui",
+  "description": "AG-UI 어댑터 (specs/ag-ui.md)",
+  "cases": [
+    {
+      "name": "액션 → tool, input 생략 시 빈 object",
+      "actions": [
+        {
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": 1
+          }
+        },
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            }
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "op": "tools",
+      "expect": [
+        {
+          "name": "cart_add",
+          "description": "담기",
+          "parameters": {
+            "type": "object",
+            "properties": {}
+          }
+        },
+        {
+          "name": "filter_set",
+          "description": "필터",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "category"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "tool 없음",
+      "actions": [],
+      "op": "tools",
+      "expect": []
+    },
+    {
+      "name": "상태 → context, 값 없음은 null",
+      "actions": [],
+      "states": [
+        {
+          "name": "cart",
+          "def": {
+            "description": "장바구니"
+          },
+          "value": [
+            {
+              "id": 1
+            }
+          ]
+        },
+        {
+          "name": "empty",
+          "def": {
+            "description": "없음"
+          }
+        }
+      ],
+      "op": "context",
+      "expect": [
+        {
+          "description": "cart: 장바구니",
+          "value": [
+            {
+              "id": 1
+            }
+          ]
+        },
+        {
+          "description": "empty: 없음",
+          "value": null
+        }
+      ]
+    },
+    {
+      "name": "응답 있는 call · 미등록 이름 무시",
+      "actions": [
+        {
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": 1
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "cart_add",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "t2",
+              "type": "function",
+              "function": {
+                "name": "backend_search",
+                "arguments": "{}"
+              }
+            },
+            {
+              "id": "t3",
+              "type": "function",
+              "function": {
+                "name": "cart_add",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "id": "r1",
+          "role": "tool",
+          "toolCallId": "t1",
+          "content": "done"
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t3",
+          "content": 1
+        }
+      ]
+    },
+    {
+      "name": "성공 content · 실패 content 와 errorCode",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            }
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "filter_set",
+                "arguments": "{\"category\":\"shoes\"}"
+              }
+            },
+            {
+              "id": "t2",
+              "type": "function",
+              "function": {
+                "name": "filter_set",
+                "arguments": "{}"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": {
+            "category": "shoes"
+          }
+        },
+        {
+          "toolCallId": "t2",
+          "content": {
+            "error": {
+              "code": "INVALID_ARGS"
+            }
+          },
+          "errorCode": "INVALID_ARGS"
+        }
+      ]
+    },
+    {
+      "name": "arguments 파싱 실패 · object 아님 · 빈 문자열",
+      "actions": [
+        {
+          "name": "echo",
+          "def": {
+            "description": "에코"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "echo",
+                "arguments": "{oops"
+              }
+            },
+            {
+              "id": "t2",
+              "type": "function",
+              "function": {
+                "name": "echo",
+                "arguments": "[1]"
+              }
+            },
+            {
+              "id": "t3",
+              "type": "function",
+              "function": {
+                "name": "echo",
+                "arguments": ""
+              }
+            },
+            {
+              "id": "t4",
+              "type": "function",
+              "function": {
+                "name": "echo",
+                "arguments": "null"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": {
+            "error": {
+              "code": "INVALID_ARGS"
+            }
+          },
+          "errorCode": "INVALID_ARGS"
+        },
+        {
+          "toolCallId": "t2",
+          "content": {
+            "error": {
+              "code": "INVALID_ARGS"
+            }
+          },
+          "errorCode": "INVALID_ARGS"
+        },
+        {
+          "toolCallId": "t3",
+          "content": {}
+        },
+        {
+          "toolCallId": "t4",
+          "content": {
+            "error": {
+              "code": "INVALID_ARGS"
+            }
+          },
+          "errorCode": "INVALID_ARGS"
+        }
+      ]
+    },
+    {
+      "name": "여러 assistant 메시지 순서대로",
+      "actions": [
+        {
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": 1
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "cart_add",
+                "arguments": "{}"
+              }
+            }
+          ]
+        },
+        {
+          "id": "u1",
+          "role": "user",
+          "content": "또"
+        },
+        {
+          "id": "a2",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t2",
+              "type": "function",
+              "function": {
+                "name": "cart_add",
+                "arguments": "{}"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": 1
+        },
+        {
+          "toolCallId": "t2",
+          "content": 1
+        }
+      ]
+    },
+    {
+      "name": "실행 실패 EXECUTION_ERROR",
+      "actions": [
+        {
+          "name": "boom",
+          "def": {
+            "description": "폭발"
+          },
+          "behavior": {
+            "throws": "boom"
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "boom",
+                "arguments": "{}"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": {
+            "error": {
+              "code": "EXECUTION_ERROR"
+            }
+          },
+          "errorCode": "EXECUTION_ERROR"
+        }
+      ]
+    },
+    {
+      "name": "confirm 거부 DENIED",
+      "actions": [
+        {
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        }
+      ],
+      "confirm": "deny",
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "pay",
+                "arguments": "{}"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": {
+            "error": {
+              "code": "DENIED"
+            }
+          },
+          "errorCode": "DENIED"
+        }
+      ]
+    },
+    {
+      "name": "confirm 승인 실행",
+      "actions": [
+        {
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        }
+      ],
+      "confirm": "approve",
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "a1",
+          "role": "assistant",
+          "toolCalls": [
+            {
+              "id": "t1",
+              "type": "function",
+              "function": {
+                "name": "pay",
+                "arguments": "{}"
+              }
+            }
+          ]
+        }
+      ],
+      "expect": [
+        {
+          "toolCallId": "t1",
+          "content": "paid"
+        }
+      ]
+    },
+    {
+      "name": "tool call 없음",
+      "actions": [
+        {
+          "name": "cart_add",
+          "def": {
+            "description": "담기"
+          },
+          "behavior": {
+            "returns": 1
+          }
+        }
+      ],
+      "op": "runFrontendTools",
+      "messages": [
+        {
+          "id": "u1",
+          "role": "user",
+          "content": "안녕"
+        },
+        {
+          "id": "a1",
+          "role": "assistant",
+          "content": "안녕하세요"
+        }
+      ],
+      "expect": []
+    }
+  ]
+}

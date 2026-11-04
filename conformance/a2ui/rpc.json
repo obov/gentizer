@@ -1,0 +1,338 @@
+{
+  "suite": "a2ui",
+  "description": "A2UI v1.0 RPC 브리지 (specs/a2ui.md)",
+  "cases": [
+    {
+      "name": "성공 value",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "returns": "object"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c1",
+          "callFunction": {
+            "@call": "filter_set",
+            "catalogId": "https://example.com/shop/catalog.json",
+            "args": {
+              "category": "shoes"
+            }
+          }
+        }
+      },
+      "expect": {
+        "value": {
+          "category": "shoes"
+        }
+      }
+    },
+    {
+      "name": "반환 없음은 null",
+      "actions": [
+        {
+          "name": "cart_clear",
+          "def": {
+            "description": "비우기"
+          },
+          "behavior": {
+            "returns": null
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c2",
+          "callFunction": {
+            "@call": "cart_clear",
+            "catalogId": "https://example.com/shop/catalog.json"
+          }
+        }
+      },
+      "expect": {
+        "value": null
+      }
+    },
+    {
+      "name": "catalogId 생략 시 브리지 catalogId",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "returns": "object"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c3",
+          "callFunction": {
+            "@call": "filter_set",
+            "args": {
+              "category": "a"
+            }
+          }
+        }
+      },
+      "expect": {
+        "value": {
+          "category": "a"
+        }
+      }
+    },
+    {
+      "name": "다른 catalogId",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "returns": "object"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c4",
+          "callFunction": {
+            "@call": "filter_set",
+            "catalogId": "https://other.example/catalog.json",
+            "args": {
+              "category": "a"
+            }
+          }
+        }
+      },
+      "expect": {
+        "errorCode": "INVALID_FUNCTION_CALL"
+      }
+    },
+    {
+      "name": "required 누락",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "returns": "object"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c5",
+          "callFunction": {
+            "@call": "filter_set",
+            "catalogId": "https://example.com/shop/catalog.json",
+            "args": {}
+          }
+        }
+      },
+      "expect": {
+        "errorCode": "INVALID_FUNCTION_CALL"
+      }
+    },
+    {
+      "name": "미등록 액션",
+      "actions": [
+        {
+          "name": "filter_set",
+          "def": {
+            "description": "필터",
+            "input": {
+              "type": "object",
+              "properties": {
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "category"
+              ]
+            },
+            "returns": "object"
+          },
+          "behavior": {
+            "echoArgs": true
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c6",
+          "callFunction": {
+            "@call": "nope",
+            "catalogId": "https://example.com/shop/catalog.json",
+            "args": {}
+          }
+        }
+      },
+      "expect": {
+        "errorCode": "INVALID_FUNCTION_CALL"
+      }
+    },
+    {
+      "name": "실행 실패",
+      "actions": [
+        {
+          "name": "boom",
+          "def": {
+            "description": "폭발"
+          },
+          "behavior": {
+            "throws": "boom"
+          }
+        }
+      ],
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c7",
+          "callFunction": {
+            "@call": "boom",
+            "catalogId": "https://example.com/shop/catalog.json"
+          }
+        }
+      },
+      "expect": {
+        "errorCode": "EXECUTION_ERROR",
+        "messagePrefix": "EXECUTION_ERROR: "
+      }
+    },
+    {
+      "name": "confirm 거부",
+      "actions": [
+        {
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        }
+      ],
+      "confirm": "deny",
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c8",
+          "callFunction": {
+            "@call": "pay",
+            "catalogId": "https://example.com/shop/catalog.json"
+          }
+        }
+      },
+      "expect": {
+        "errorCode": "EXECUTION_ERROR",
+        "messagePrefix": "DENIED: "
+      }
+    },
+    {
+      "name": "confirm 승인",
+      "actions": [
+        {
+          "name": "pay",
+          "def": {
+            "description": "결제",
+            "confirm": true
+          },
+          "behavior": {
+            "returns": "paid"
+          }
+        }
+      ],
+      "confirm": "approve",
+      "catalogId": "https://example.com/shop/catalog.json",
+      "message": {
+        "version": "1.0",
+        "callRendererFunction": {
+          "functionCallId": "c9",
+          "callFunction": {
+            "@call": "pay",
+            "catalogId": "https://example.com/shop/catalog.json"
+          }
+        }
+      },
+      "expect": {
+        "value": "paid"
+      }
+    }
+  ]
+}
