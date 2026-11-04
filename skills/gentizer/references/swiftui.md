@@ -6,7 +6,7 @@
 import Gentizer
 import GentizerSwiftUI
 
-@MainActor final class AgentSetup: ObservableObject {
+@MainActor final class ShopAgents: ObservableObject {
     let confirmation = AgentConfirmation()
     lazy var runtime = AgentRuntime(confirm: { [confirmation] in await confirmation.confirm($0) })
 }
