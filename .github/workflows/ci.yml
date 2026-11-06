@@ -18,7 +18,11 @@ jobs:
       - run: npm run build
       - run: npm run check
       - run: npm run check:skill
-      - run: npx gnam verify
+      # 전체 history 검사는 release.targets 도입 전 커밋 (packages/ 없음) 에서 gnam 이 실패 → push · PR 범위만
+      - if: github.event_name == 'push'
+        run: npx gnam verify --push ${{ github.event.before }} ${{ github.sha }}
+      - if: github.event_name == 'pull_request'
+        run: npx gnam verify --range origin/${{ github.base_ref }}..HEAD
 
   swift:
     runs-on: macos-15-intel  # arm64 runner 용량 부족으로 할당 실패 반복 (2026-11-05)

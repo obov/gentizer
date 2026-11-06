@@ -57,7 +57,7 @@ version   swift/VERSION
 CI (`.github/workflows/ci.yml`):
 
 ```text
-check     push · PR. ubuntu, npm ci → npm run build → npm run check → npx gnam verify
+check     push · PR. ubuntu, npm ci → npm run build → npm run check → npm run check:skill → npx gnam verify (push = --push before sha, PR = --range base..HEAD)
 swift     push · PR. macos, swift test --package-path swift · swift build --package-path examples/swift/ShopExample
 export    main push, check · swift 통과 후. checkout fetch-depth 0 → export build swift → export push swift
           자격 = secret GENTIZER_SWIFT_DEPLOY_KEY (gentizer-swift 쓰기 deploy key, ssh), git url insteadOf 로 https → ssh
