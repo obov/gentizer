@@ -20,5 +20,15 @@
         "version": "swift/VERSION"
       }
     }
+  },
+  "release": {
+    "targets": {
+      "packages/core": "semver",
+      "packages/dom": "semver",
+      "packages/a2ui": "semver",
+      "packages/ag-ui": "semver",
+      "packages/react": "semver",
+      "packages/react-a2ui": "semver"
+    }
   }
 }
